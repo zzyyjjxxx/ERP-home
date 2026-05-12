@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText, ProFormSelect } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, message, Popconfirm } from 'antd';
+import { Tag, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getUserList, addUser, updateUser, deleteUser } from '@/services/system';
 import PermissionBtn from '@/components/PermissionBtn';
 
 export default function UserList() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
 

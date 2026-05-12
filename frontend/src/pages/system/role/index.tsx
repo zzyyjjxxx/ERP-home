@@ -7,7 +7,7 @@ import { getRoleList, addRole, updateRole, deleteRole, getRoleMenus, assignRoleM
 import PermissionBtn from '@/components/PermissionBtn';
 
 export default function RoleList() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
   const [menuVisible, setMenuVisible] = useState(false);

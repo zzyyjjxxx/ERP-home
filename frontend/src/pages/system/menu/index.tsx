@@ -6,7 +6,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { getMenuTree, addMenu, updateMenu, deleteMenu } from '@/services/system';
 
 export default function MenuList() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
 

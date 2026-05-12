@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tabs, message, Popconfirm } from 'antd';
+import { Button, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import request from '@/utils/request';
 
 function DictDataList({ dictTypeId }: { dictTypeId: number }) {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
 
@@ -36,7 +36,7 @@ function DictDataList({ dictTypeId }: { dictTypeId: number }) {
       <ProTable
         columns={columns}
         request={async (params) => {
-          const data = await request.get('/system/dict-data/list', { params: { ...params, dictTypeId } });
+          const data: any = await request.get('/system/dict-data/list', { params: { ...params, dictTypeId } });
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}
@@ -73,10 +73,10 @@ function DictDataList({ dictTypeId }: { dictTypeId: number }) {
 }
 
 export default function DictManage() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<number>();
+  const [, setActiveTab] = useState<number>();
 
   const columns: ProColumns[] = [
     { title: '编码', dataIndex: 'dictCode', key: 'dictCode' },
@@ -103,7 +103,7 @@ export default function DictManage() {
       <ProTable
         columns={columns}
         request={async () => {
-          const data = await request.get('/system/dict-type/list');
+          const data: any = await request.get('/system/dict-type/list');
           return { data, total: data?.length || 0, success: true };
         }}
         actionRef={actionRef}
