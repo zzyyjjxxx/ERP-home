@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Login from '@/pages/login';
 import Layout from '@/components/layout';
+import Dashboard from '@/pages/dashboard';
 import UserList from '@/pages/system/user';
 import RoleList from '@/pages/system/role';
 import MenuList from '@/pages/system/menu';
@@ -19,6 +20,10 @@ import SubjectList from '@/pages/finance/subject';
 import VoucherList from '@/pages/finance/voucher';
 import ReceivableList from '@/pages/finance/receivable';
 import PayableList from '@/pages/finance/payable';
+import BomList from '@/pages/production/bom';
+import WorkOrderList from '@/pages/production/workorder';
+import PlanningList from '@/pages/production/planning';
+import QcList from '@/pages/production/qc';
 
 const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -27,7 +32,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <div>仪表盘</div> },
+      { path: 'dashboard', element: <Dashboard /> },
       { path: 'system/user', element: <UserList /> },
       { path: 'system/role', element: <RoleList /> },
       { path: 'system/menu', element: <MenuList /> },
@@ -46,6 +51,10 @@ const router = createBrowserRouter([
       { path: 'finance/voucher', element: <VoucherList /> },
       { path: 'finance/receivable', element: <ReceivableList /> },
       { path: 'finance/payable', element: <PayableList /> },
+      { path: 'production/bom', element: <BomList /> },
+      { path: 'production/workorder', element: <WorkOrderList /> },
+      { path: 'production/planning', element: <PlanningList /> },
+      { path: 'production/qc', element: <QcList /> },
     ],
   },
 ]);

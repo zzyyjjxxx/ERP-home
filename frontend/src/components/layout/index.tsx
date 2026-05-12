@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Dropdown, Avatar } from 'antd';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined,
-  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined, DollarOutlined,
+  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined, DollarOutlined, ToolOutlined, DashboardOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useUserStore } from '@/stores/userStore';
@@ -12,6 +12,7 @@ import { getUserInfo } from '@/services/auth';
 const { Header, Sider, Content } = Layout;
 
 const menuItems: MenuProps['items'] = [
+  { key: '/dashboard', icon: <DashboardOutlined />, label: '首页' },
   { key: '/system', icon: <SettingOutlined />, label: '系统管理', children: [
     { key: '/system/user', label: '用户管理' },
     { key: '/system/role', label: '角色管理' },
@@ -39,6 +40,12 @@ const menuItems: MenuProps['items'] = [
     { key: '/finance/voucher', label: '凭证管理' },
     { key: '/finance/receivable', label: '应收账款' },
     { key: '/finance/payable', label: '应付账款' },
+  ]},
+  { key: '/production', icon: <ToolOutlined />, label: '生产管理', children: [
+    { key: '/production/bom', label: 'BOM管理' },
+    { key: '/production/workorder', label: '工单管理' },
+    { key: '/production/planning', label: '生产计划' },
+    { key: '/production/qc', label: '质检管理' },
   ]},
 ];
 
