@@ -4,17 +4,19 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.response.Result;
 import com.erp.system.entity.SysRole;
 import com.erp.system.service.SysRoleService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/system/role")
-@RequiredArgsConstructor
 public class SysRoleController {
 
     private final SysRoleService roleService;
+
+    public SysRoleController(SysRoleService roleService) {
+        this.roleService = roleService;
+    }
 
     @GetMapping("/list")
     @RequirePermission("system:role:list")

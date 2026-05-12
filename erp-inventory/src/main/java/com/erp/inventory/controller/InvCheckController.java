@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.OperLog;
 import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
+import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.inventory.entity.InvCheck;
@@ -11,6 +12,7 @@ import com.erp.inventory.entity.InvCheckItem;
 import com.erp.inventory.mapper.InvCheckItemMapper;
 import com.erp.inventory.mapper.InvCheckMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -85,6 +87,32 @@ public class InvCheckController extends BaseController {
             item.setCheckId(id);
             checkItemMapper.insert(item);
         }
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}/audit")
+    @RequirePermission("inventory:check:audit")
+    @OperLog(module = "库存管理", action = "审核盘点单")
+    @Transactional
+    public Result<?> audit(@PathVariable Long id) {
+        InvCheck check = checkMapper.selectById(id);
+        if (check == null) throw new BusinessException("盘点单不存在");
+        if (check.getStatus() != null && check.getStatus() != 0) throw new BusinessException("只能审核待审状态的盘点单");
+        check.setStatus(1);
+        checkMapper.updateById(check);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("inventory:check:audit")
+    @OperLog(module = "库存管理", action = "反审核盘点单")
+    @Transactional
+    public Result<?> unaudit(@PathVariable Long id) {
+        InvCheck check = checkMapper.selectById(id);
+        if (check == null) throw new BusinessException("盘点单不存在");
+        if (check.getStatus() == null || check.getStatus() != 1) throw new BusinessException("只能反审核已审状态的盘点单");
+        check.setStatus(0);
+        checkMapper.updateById(check);
         return Result.ok();
     }
 }

@@ -4,28 +4,34 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.erp.system.entity.SysEventRecord;
 import com.erp.system.mapper.SysEventRecordMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public class EventRetryTask {
+
+    private static final Logger log = LoggerFactory.getLogger(EventRetryTask.class);
 
     private final SysEventRecordMapper eventRecordMapper;
     private final ApplicationEventPublisher publisher;
     private final ObjectMapper objectMapper;
 
+    public EventRetryTask(SysEventRecordMapper eventRecordMapper, ApplicationEventPublisher publisher, ObjectMapper objectMapper) {
+        this.eventRecordMapper = eventRecordMapper;
+        this.publisher = publisher;
+        this.objectMapper = objectMapper;
+    }
+
     @Scheduled(cron = "0 */5 * * * ?")
     public void retryFailedEvents() {
         LambdaQueryWrapper<SysEventRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysEventRecord::getStatus, 0)
-                .lt(SysEventRecord::getRetryCount, SysEventRecord::getMaxRetry);
+                .apply("retry_count < max_retry");
         List<SysEventRecord> events = eventRecordMapper.selectList(wrapper);
 
         for (SysEventRecord record : events) {

@@ -3,7 +3,8 @@ import { ProTable, ModalForm, ProFormText, ProFormSelect, ProFormTextArea } from
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Tag, Button, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { getCheckList, addCheck, updateCheck, deleteCheck, auditCheck, getWarehouseList } from '@/services/inventory';
+import { getCheckList, addCheck, updateCheck, deleteCheck, auditCheck, unauditCheck, getWarehouseList } from '@/services/inventory';
+import PermissionBtn from '@/components/PermissionBtn';
 
 export default function CheckList() {
   const actionRef = useRef<ActionType>(null!);
@@ -42,6 +43,7 @@ export default function CheckList() {
               <Button type="link">审核</Button>
             </Popconfirm>
           )}
+          {record.status === 1 && <PermissionBtn permission="inventory:check:unaudit" type="link" onClick={async () => { await unauditCheck(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
           <Button type="link" onClick={() => { setEditRecord(record); setModalOpen(true); }} disabled={record.status !== 0}>编辑</Button>
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deleteCheck(record.id);

@@ -5,7 +5,7 @@ import { Button, Tag, message, Popconfirm, Modal, Form, DatePicker, Select, Inpu
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
-  getVoucherList, addVoucher, updateVoucher, deleteVoucher, auditVoucher,
+  getVoucherList, addVoucher, updateVoucher, deleteVoucher, auditVoucher, unauditVoucher,
   getVoucherDetail,
 } from '@/services/finance';
 import { getSubjectTree } from '@/services/finance';
@@ -209,6 +209,7 @@ export default function VoucherList() {
               <Button type="link" size="small" onClick={() => handleAudit(record.id)}>审核</Button>
             </>
           )}
+          {record.status === 1 && <Button type="link" size="small" onClick={async () => { await unauditVoucher(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</Button>}
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deleteVoucher(record.id);
             message.success('删除成功');

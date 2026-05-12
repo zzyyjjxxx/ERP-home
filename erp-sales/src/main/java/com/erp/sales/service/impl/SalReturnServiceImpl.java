@@ -69,6 +69,16 @@ public class SalReturnServiceImpl extends ServiceImpl<SalReturnMapper, SalReturn
     }
 
     @Override
+    @Transactional
+    public void unauditReturn(Long id) {
+        SalReturn salReturn = getById(id);
+        if (salReturn == null) throw new BusinessException("退货单不存在");
+        if (salReturn.getStatus() != 1) throw new BusinessException("只能反审核已完成状态的退货单");
+        salReturn.setStatus(0);
+        updateById(salReturn);
+    }
+
+    @Override
     public List<SalReturnItem> getReturnItems(Long returnId) {
         LambdaQueryWrapper<SalReturnItem> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SalReturnItem::getReturnId, returnId);

@@ -1,7 +1,10 @@
 package com.erp.inventory.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.OperLog;
 import com.erp.common.annotation.RequirePermission;
+import com.erp.common.base.BaseController;
+import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.inventory.entity.InvWarehouse;
 import com.erp.inventory.mapper.InvWarehouseMapper;
@@ -12,13 +15,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/inventory/warehouse")
 @RequiredArgsConstructor
-public class InvWarehouseController {
+public class InvWarehouseController extends BaseController {
 
     private final InvWarehouseMapper warehouseMapper;
 
     @GetMapping("/list")
     @RequirePermission("inventory:warehouse:list")
-    public Result<List<InvWarehouse>> list() {
+    public Result<PageResult<InvWarehouse>> list(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        Page<InvWarehouse> page = warehouseMapper.selectPage(new Page<>(pageNum, pageSize),
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<InvWarehouse>()
+                        .orderByDesc(InvWarehouse::getCreateTime));
+        return pageResult(page);
+    }
+
+    @GetMapping("/all")
+    public Result<List<InvWarehouse>> all() {
         return Result.ok(warehouseMapper.selectList(null));
     }
 

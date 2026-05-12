@@ -3,17 +3,19 @@ package com.erp.system.controller;
 import com.erp.common.response.Result;
 import com.erp.system.entity.SysMenu;
 import com.erp.system.service.SysMenuService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/system/menu")
-@RequiredArgsConstructor
 public class SysMenuController {
 
     private final SysMenuService menuService;
+
+    public SysMenuController(SysMenuService menuService) {
+        this.menuService = menuService;
+    }
 
     @GetMapping("/tree")
     public Result<List<SysMenu>> tree() {

@@ -27,4 +27,28 @@ public class FinReceivableController extends BaseController {
                         .orderByDesc(FinReceivable::getCreateTime));
         return pageResult(page);
     }
+
+    @GetMapping("/{id}")
+    public Result<FinReceivable> getById(@PathVariable Long id) {
+        return Result.ok(receivableMapper.selectById(id));
+    }
+
+    @PostMapping
+    public Result<?> add(@RequestBody FinReceivable receivable) {
+        receivableMapper.insert(receivable);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    public Result<?> update(@PathVariable Long id, @RequestBody FinReceivable receivable) {
+        receivable.setId(id);
+        receivableMapper.updateById(receivable);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result<?> delete(@PathVariable Long id) {
+        receivableMapper.deleteById(id);
+        return Result.ok();
+    }
 }

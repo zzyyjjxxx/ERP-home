@@ -2,11 +2,7 @@ package com.erp.system.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.erp.common.base.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @TableName("sys_dept")
 public class SysDept extends BaseEntity {
     private Long parentId;
@@ -15,4 +11,17 @@ public class SysDept extends BaseEntity {
     private String phone;
     private Integer sort;
     private Integer status;
+
+    public Long getParentId() { return parentId; }
+    public void setParentId(Long parentId) { this.parentId = parentId; }
+    public String getDeptName() { return deptName; }
+    public void setDeptName(String deptName) { this.deptName = deptName; }
+    public String getLeader() { return leader; }
+    public void setLeader(String leader) { this.leader = leader; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public Integer getSort() { return sort; }
+    public void setSort(Integer sort) { this.sort = sort; }
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
 }

@@ -4,7 +4,6 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.exception.BusinessException;
 import com.erp.system.service.SysMenuService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
@@ -15,10 +14,13 @@ import java.util.List;
 
 @Aspect
 @Component
-@RequiredArgsConstructor
 public class PermissionAspect {
 
     private final SysMenuService menuService;
+
+    public PermissionAspect(SysMenuService menuService) {
+        this.menuService = menuService;
+    }
 
     @Before("@annotation(rp)")
     public void checkPermission(RequirePermission rp) {

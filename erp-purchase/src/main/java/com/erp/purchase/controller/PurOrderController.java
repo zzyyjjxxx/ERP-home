@@ -9,6 +9,7 @@ import com.erp.common.response.Result;
 import com.erp.purchase.dto.CreateOrderRequest;
 import com.erp.purchase.entity.PurOrder;
 import com.erp.purchase.entity.PurOrderItem;
+import com.erp.purchase.entity.PurReceipt;
 import com.erp.purchase.service.PurOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -50,6 +51,15 @@ public class PurOrderController extends BaseController {
         return Result.ok();
     }
 
+    @PutMapping("/{id}")
+    @RequirePermission("purchase:order:edit")
+    @OperLog(module = "采购管理", action = "编辑采购订单")
+    public Result<?> update(@PathVariable Long id, @RequestBody PurOrder order) {
+        order.setId(id);
+        orderService.updateById(order);
+        return Result.ok();
+    }
+
     @PutMapping("/{id}/audit")
     @RequirePermission("purchase:order:audit")
     @OperLog(module = "采购管理", action = "审核采购订单")
@@ -58,11 +68,26 @@ public class PurOrderController extends BaseController {
         return Result.ok();
     }
 
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("purchase:order:audit")
+    @OperLog(module = "采购管理", action = "反审核采购订单")
+    public Result<?> unaudit(@PathVariable Long id) {
+        orderService.unauditOrder(id);
+        return Result.ok();
+    }
+
     @PutMapping("/{id}/cancel")
     @RequirePermission("purchase:order:cancel")
     public Result<?> cancel(@PathVariable Long id) {
         orderService.cancelOrder(id);
         return Result.ok();
+    }
+
+    @PostMapping("/{id}/push-receipt")
+    @RequirePermission("purchase:order:audit")
+    @OperLog(module = "采购管理", action = "下推生成收货单")
+    public Result<PurReceipt> pushReceipt(@PathVariable Long id) {
+        return Result.ok(orderService.pushDownToReceipt(id));
     }
 
     @DeleteMapping("/{id}")

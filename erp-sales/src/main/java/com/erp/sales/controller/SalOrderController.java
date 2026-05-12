@@ -7,6 +7,7 @@ import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.sales.dto.CreateOrderRequest;
+import com.erp.sales.entity.SalDelivery;
 import com.erp.sales.entity.SalOrder;
 import com.erp.sales.entity.SalOrderItem;
 import com.erp.sales.service.SalOrderService;
@@ -50,6 +51,15 @@ public class SalOrderController extends BaseController {
         return Result.ok();
     }
 
+    @PutMapping("/{id}")
+    @RequirePermission("sales:order:edit")
+    @OperLog(module = "销售管理", action = "编辑销售订单")
+    public Result<?> update(@PathVariable Long id, @RequestBody SalOrder order) {
+        order.setId(id);
+        orderService.updateById(order);
+        return Result.ok();
+    }
+
     @PutMapping("/{id}/audit")
     @RequirePermission("sales:order:audit")
     @OperLog(module = "销售管理", action = "审核销售订单")
@@ -58,11 +68,26 @@ public class SalOrderController extends BaseController {
         return Result.ok();
     }
 
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("sales:order:audit")
+    @OperLog(module = "销售管理", action = "反审核销售订单")
+    public Result<?> unaudit(@PathVariable Long id) {
+        orderService.unauditOrder(id);
+        return Result.ok();
+    }
+
     @PutMapping("/{id}/cancel")
     @RequirePermission("sales:order:cancel")
     public Result<?> cancel(@PathVariable Long id) {
         orderService.cancelOrder(id);
         return Result.ok();
+    }
+
+    @PostMapping("/{id}/push-delivery")
+    @RequirePermission("sales:order:audit")
+    @OperLog(module = "销售管理", action = "下推生成发货单")
+    public Result<SalDelivery> pushDelivery(@PathVariable Long id) {
+        return Result.ok(orderService.pushDownToDelivery(id));
     }
 
     @DeleteMapping("/{id}")

@@ -10,5 +10,6 @@ public interface PurReturnService extends IService<PurReturn> {
     Page<PurReturn> pageReturns(int pageNum, int pageSize, Integer status);
     void createReturn(PurReturn purReturn, List<PurReturnItem> items);
     void completeReturn(Long id);
+    void unauditReturn(Long id);
     List<PurReturnItem> getReturnItems(Long returnId);
 }

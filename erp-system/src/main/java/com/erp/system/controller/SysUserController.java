@@ -8,17 +8,19 @@ import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.system.entity.SysUser;
 import com.erp.system.service.SysUserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/system/user")
-@RequiredArgsConstructor
 public class SysUserController extends BaseController {
 
     private final SysUserService userService;
+
+    public SysUserController(SysUserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/list")
     @RequirePermission("system:user:list")

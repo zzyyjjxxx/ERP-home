@@ -56,4 +56,28 @@ public class SalDeliveryController extends BaseController {
         deliveryService.auditDelivery(id);
         return Result.ok();
     }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("sales:delivery:audit")
+    @OperLog(module = "销售管理", action = "反审核发货单")
+    public Result<?> unaudit(@PathVariable Long id) {
+        deliveryService.unauditDelivery(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    @RequirePermission("sales:delivery:edit")
+    @OperLog(module = "销售管理", action = "编辑发货单")
+    public Result<?> update(@PathVariable Long id, @RequestBody SalDelivery delivery) {
+        delivery.setId(id);
+        deliveryService.updateById(delivery);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    @RequirePermission("sales:delivery:delete")
+    public Result<?> delete(@PathVariable Long id) {
+        deliveryService.removeById(id);
+        return Result.ok();
+    }
 }

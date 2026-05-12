@@ -55,4 +55,28 @@ public class SalReturnController extends BaseController {
         returnService.completeReturn(id);
         return Result.ok();
     }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("sales:return:audit")
+    @OperLog(module = "销售管理", action = "反审核售后退货单")
+    public Result<?> unaudit(@PathVariable Long id) {
+        returnService.unauditReturn(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    @RequirePermission("sales:return:edit")
+    @OperLog(module = "销售管理", action = "编辑售后退货单")
+    public Result<?> update(@PathVariable Long id, @RequestBody SalReturn salReturn) {
+        salReturn.setId(id);
+        returnService.updateById(salReturn);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    @RequirePermission("sales:return:delete")
+    public Result<?> delete(@PathVariable Long id) {
+        returnService.removeById(id);
+        return Result.ok();
+    }
 }

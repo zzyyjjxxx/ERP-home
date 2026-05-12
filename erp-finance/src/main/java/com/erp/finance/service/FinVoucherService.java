@@ -10,5 +10,6 @@ public interface FinVoucherService extends IService<FinVoucher> {
     Page<FinVoucher> pageVouchers(int pageNum, int pageSize, Integer status);
     void createVoucher(FinVoucher voucher, List<FinVoucherItem> items);
     void auditVoucher(Long id);
+    void unauditVoucher(Long id);
     List<FinVoucherItem> getVoucherItems(Long voucherId);
 }

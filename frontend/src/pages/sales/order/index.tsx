@@ -3,7 +3,7 @@ import { ProTable, ProFormSelect, ProFormDatePicker } from '@ant-design/pro-comp
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Button, Tag, Modal, Form, Table, InputNumber, Input, message, Popconfirm, Space } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getOrderList, addOrder, updateOrder, auditOrder, cancelOrder, deleteOrder, getAllCustomers } from '@/services/sales';
+import { getOrderList, addOrder, updateOrder, auditOrder, unauditOrder, pushDownDelivery, cancelOrder, deleteOrder, getAllCustomers } from '@/services/sales';
 import { getAllProducts } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
@@ -56,6 +56,8 @@ export default function SalesOrderList() {
       render: (_, record) => (
         <Space>
           {record.status === 1 && <PermissionBtn permission="sales:order:audit" type="link" onClick={async () => { await auditOrder(record.id); message.success('审核成功'); actionRef.current?.reload(); }}>审核</PermissionBtn>}
+          {record.status === 2 && <PermissionBtn permission="sales:order:unaudit" type="link" onClick={async () => { await unauditOrder(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
+          {record.status === 2 && <PermissionBtn permission="sales:order:push-delivery" type="link" onClick={async () => { await pushDownDelivery(record.id); message.success('下推成功'); actionRef.current?.reload(); }}>下推发货</PermissionBtn>}
           {(record.status === 0 || record.status === 1) && (
             <>
               <PermissionBtn permission="sales:order:edit" type="link" onClick={() => {

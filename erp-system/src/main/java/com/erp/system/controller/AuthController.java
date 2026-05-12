@@ -8,7 +8,6 @@ import com.erp.system.entity.SysUser;
 import com.erp.system.service.SysMenuService;
 import com.erp.system.service.SysUserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +16,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final SysUserService userService;
     private final SysMenuService menuService;
     private final JwtUtil jwtUtil;
+
+    public AuthController(SysUserService userService, SysMenuService menuService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.menuService = menuService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@Valid @RequestBody LoginDTO dto) {

@@ -55,4 +55,28 @@ public class PurReturnController extends BaseController {
         returnService.completeReturn(id);
         return Result.ok();
     }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("purchase:return:audit")
+    @OperLog(module = "采购管理", action = "反审核退货单")
+    public Result<?> unaudit(@PathVariable Long id) {
+        returnService.unauditReturn(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    @RequirePermission("purchase:return:edit")
+    @OperLog(module = "采购管理", action = "编辑退货单")
+    public Result<?> update(@PathVariable Long id, @RequestBody PurReturn purReturn) {
+        purReturn.setId(id);
+        returnService.updateById(purReturn);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    @RequirePermission("purchase:return:delete")
+    public Result<?> delete(@PathVariable Long id) {
+        returnService.removeById(id);
+        return Result.ok();
+    }
 }

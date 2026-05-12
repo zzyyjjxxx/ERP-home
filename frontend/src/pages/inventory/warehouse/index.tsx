@@ -32,7 +32,7 @@ export default function WarehouseList() {
 
   return (
     <>
-      <ProTable columns={columns} request={async () => { const data = await getWarehouseList(); return { data, total: data?.length || 0, success: true }; }}
+      <ProTable columns={columns} request={async (params) => { const data = await getWarehouseList(params); return { data: data.records || data, total: data.total || data?.length || 0, success: true }; }}
         actionRef={actionRef} rowKey="id" search={false}
         toolBarRender={() => [
           <PermissionBtn key="add" permission="inventory:warehouse:add" type="primary" icon={<PlusOutlined />} onClick={() => { setEditRecord(null); setModalOpen(true); }}>新增仓库</PermissionBtn>,

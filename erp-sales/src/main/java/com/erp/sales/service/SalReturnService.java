@@ -10,5 +10,6 @@ public interface SalReturnService extends IService<SalReturn> {
     Page<SalReturn> pageReturns(int pageNum, int pageSize, Integer status);
     void createReturn(SalReturn salReturn, List<SalReturnItem> items);
     void completeReturn(Long id);
+    void unauditReturn(Long id);
     List<SalReturnItem> getReturnItems(Long returnId);
 }

@@ -20,8 +20,8 @@ export function deleteProduct(id: number) {
   return request.delete(`/inventory/product/${id}`);
 }
 
-export function getWarehouseList() {
-  return request.get('/inventory/warehouse/list');
+export function getWarehouseList(params?: any) {
+  return request.get('/inventory/warehouse/list', { params });
 }
 
 export function addWarehouse(data: any) {
@@ -91,6 +91,9 @@ export function deleteTransfer(id: number) {
 export function auditTransfer(id: number) {
   return request.put('/inventory/transfer/' + id + '/audit');
 }
+export function unauditTransfer(id: number) {
+  return request.put('/inventory/transfer/' + id + '/unaudit');
+}
 
 // Check
 export function getCheckList(params: any) {
@@ -107,4 +110,7 @@ export function deleteCheck(id: number) {
 }
 export function auditCheck(id: number) {
   return request.put('/inventory/check/' + id + '/audit');
+}
+export function unauditCheck(id: number) {
+  return request.put('/inventory/check/' + id + '/unaudit');
 }

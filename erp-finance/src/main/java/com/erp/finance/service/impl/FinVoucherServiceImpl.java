@@ -75,6 +75,18 @@ public class FinVoucherServiceImpl extends ServiceImpl<FinVoucherMapper, FinVouc
     }
 
     @Override
+    @Transactional
+    public void unauditVoucher(Long id) {
+        FinVoucher voucher = getById(id);
+        if (voucher == null) throw new BusinessException("凭证不存在");
+        if (voucher.getStatus() != 1) throw new BusinessException("只能反审核已审核状态的凭证");
+        voucher.setStatus(0);
+        voucher.setAuditTime(null);
+        voucher.setAuditorId(null);
+        updateById(voucher);
+    }
+
+    @Override
     public List<FinVoucherItem> getVoucherItems(Long voucherId) {
         LambdaQueryWrapper<FinVoucherItem> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FinVoucherItem::getVoucherId, voucherId)

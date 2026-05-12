@@ -68,6 +68,18 @@ public class PurReceiptServiceImpl extends ServiceImpl<PurReceiptMapper, PurRece
     }
 
     @Override
+    @Transactional
+    public void unauditReceipt(Long id) {
+        PurReceipt receipt = getById(id);
+        if (receipt == null) throw new BusinessException("收货单不存在");
+        if (receipt.getStatus() != 1) throw new BusinessException("只能反审核已完成状态的收货单");
+        receipt.setStatus(0);
+        receipt.setAuditTime(null);
+        receipt.setAuditorId(null);
+        updateById(receipt);
+    }
+
+    @Override
     public List<PurReceiptItem> getReceiptItems(Long receiptId) {
         LambdaQueryWrapper<PurReceiptItem> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PurReceiptItem::getReceiptId, receiptId);

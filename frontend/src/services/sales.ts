@@ -44,6 +44,14 @@ export function auditOrder(id: number) {
   return request.put(`/sales/order/${id}/audit`);
 }
 
+export function unauditOrder(id: number) {
+  return request.put(`/sales/order/${id}/unaudit`);
+}
+
+export function pushDownDelivery(orderId: number) {
+  return request.post(`/sales/order/${orderId}/push-delivery`);
+}
+
 export function cancelOrder(id: number) {
   return request.put(`/sales/order/${id}/cancel`);
 }
@@ -76,6 +84,10 @@ export function auditDelivery(id: number) {
   return request.put(`/sales/delivery/${id}/audit`);
 }
 
+export function unauditDelivery(id: number) {
+  return request.put(`/sales/delivery/${id}/unaudit`);
+}
+
 export function getReturnList(params: any) {
   return request.get('/sales/return/list', { params });
 }
@@ -94,4 +106,8 @@ export function deleteReturn(id: number) {
 
 export function completeReturn(id: number) {
   return request.put(`/sales/return/${id}/complete`);
+}
+
+export function unauditReturn(id: number) {
+  return request.put(`/sales/return/${id}/unaudit`);
 }

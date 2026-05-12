@@ -7,7 +7,6 @@ import com.erp.system.entity.SysRoleMenu;
 import com.erp.system.mapper.SysRoleMapper;
 import com.erp.system.mapper.SysRoleMenuMapper;
 import com.erp.system.service.SysRoleService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +14,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements SysRoleService {
 
     private final SysRoleMenuMapper roleMenuMapper;
+
+    public SysRoleServiceImpl(SysRoleMenuMapper roleMenuMapper) {
+        this.roleMenuMapper = roleMenuMapper;
+    }
 
     @Override
     public List<Long> getRoleMenus(Long roleId) {

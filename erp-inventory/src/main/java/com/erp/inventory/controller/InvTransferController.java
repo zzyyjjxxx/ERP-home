@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.OperLog;
 import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
+import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.inventory.entity.InvTransfer;
@@ -11,6 +12,7 @@ import com.erp.inventory.entity.InvTransferItem;
 import com.erp.inventory.mapper.InvTransferItemMapper;
 import com.erp.inventory.mapper.InvTransferMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,6 +85,34 @@ public class InvTransferController extends BaseController {
             item.setTransferId(id);
             transferItemMapper.insert(item);
         }
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}/audit")
+    @RequirePermission("inventory:transfer:audit")
+    @OperLog(module = "库存管理", action = "审核调拨单")
+    @Transactional
+    public Result<?> audit(@PathVariable Long id) {
+        InvTransfer transfer = transferMapper.selectById(id);
+        if (transfer == null) throw new BusinessException("调拨单不存在");
+        int currentStatus = transfer.getStatus() != null ? transfer.getStatus() : 0;
+        if (currentStatus >= 3) throw new BusinessException("调拨单已完成，不能继续审核");
+        transfer.setStatus(currentStatus + 1);
+        transferMapper.updateById(transfer);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("inventory:transfer:audit")
+    @OperLog(module = "库存管理", action = "反审核调拨单")
+    @Transactional
+    public Result<?> unaudit(@PathVariable Long id) {
+        InvTransfer transfer = transferMapper.selectById(id);
+        if (transfer == null) throw new BusinessException("调拨单不存在");
+        int currentStatus = transfer.getStatus() != null ? transfer.getStatus() : 0;
+        if (currentStatus <= 0) throw new BusinessException("调拨单为待审状态，不能反审核");
+        transfer.setStatus(currentStatus - 1);
+        transferMapper.updateById(transfer);
         return Result.ok();
     }
 }

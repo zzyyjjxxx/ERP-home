@@ -10,7 +10,6 @@ import com.erp.system.entity.SysUserRole;
 import com.erp.system.mapper.SysUserMapper;
 import com.erp.system.mapper.SysUserRoleMapper;
 import com.erp.system.service.SysUserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     private final SysUserRoleMapper userRoleMapper;
+
+    public SysUserServiceImpl(SysUserRoleMapper userRoleMapper) {
+        this.userRoleMapper = userRoleMapper;
+    }
 
     @Override
     public Page<SysUser> pageUsers(int pageNum, int pageSize, String keyword, Long deptId, Integer status) {

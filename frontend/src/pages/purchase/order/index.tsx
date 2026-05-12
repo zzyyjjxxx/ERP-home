@@ -3,7 +3,7 @@ import { ProTable, ProFormSelect, ProFormDatePicker, ProFormDigit } from '@ant-d
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Button, Tag, Modal, Form, Table, InputNumber, Input, message, Popconfirm, Space } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getOrderList, addOrder, auditOrder, cancelOrder, deleteOrder, getAllSuppliers } from '@/services/purchase';
+import { getOrderList, addOrder, auditOrder, unauditOrder, pushDownReceipt, cancelOrder, deleteOrder, getAllSuppliers } from '@/services/purchase';
 import { getAllProducts } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
@@ -44,6 +44,8 @@ export default function OrderList() {
       render: (_, record) => (
         <Space>
           {record.status === 1 && <PermissionBtn permission="purchase:order:audit" type="link" onClick={async () => { await auditOrder(record.id); message.success('审核成功'); actionRef.current?.reload(); }}>审核</PermissionBtn>}
+          {record.status === 2 && <PermissionBtn permission="purchase:order:unaudit" type="link" onClick={async () => { await unauditOrder(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
+          {record.status === 2 && <PermissionBtn permission="purchase:order:push-receipt" type="link" onClick={async () => { await pushDownReceipt(record.id); message.success('下推成功'); actionRef.current?.reload(); }}>下推收货</PermissionBtn>}
           {(record.status === 0 || record.status === 1) && <PermissionBtn permission="purchase:order:cancel" type="link" danger><Popconfirm title="确定取消?" onConfirm={async () => { await cancelOrder(record.id); message.success('已取消'); actionRef.current?.reload(); }}>取消</Popconfirm></PermissionBtn>}
           <PermissionBtn permission="purchase:order:delete" type="link" danger><Popconfirm title="确定删除?" onConfirm={async () => { await deleteOrder(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm></PermissionBtn>
         </Space>

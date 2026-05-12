@@ -42,14 +42,36 @@ export function auditVoucher(id: number): Promise<any> {
   return request.put(`/finance/voucher/${id}/audit`);
 }
 
+export function unauditVoucher(id: number): Promise<any> {
+  return request.put(`/finance/voucher/${id}/unaudit`);
+}
+
 // Receivable
 export function getReceivableList(params: any): Promise<{ records: any[]; total: number }> {
   return request.get('/finance/receivable/list', { params });
+}
+export function addReceivable(data: any): Promise<any> {
+  return request.post('/finance/receivable', data);
+}
+export function updateReceivable(id: number, data: any): Promise<any> {
+  return request.put(`/finance/receivable/${id}`, data);
+}
+export function deleteReceivable(id: number): Promise<any> {
+  return request.delete(`/finance/receivable/${id}`);
 }
 
 // Payable
 export function getPayableList(params: any): Promise<{ records: any[]; total: number }> {
   return request.get('/finance/payable/list', { params });
+}
+export function addPayable(data: any): Promise<any> {
+  return request.post('/finance/payable', data);
+}
+export function updatePayable(id: number, data: any): Promise<any> {
+  return request.put(`/finance/payable/${id}`, data);
+}
+export function deletePayable(id: number): Promise<any> {
+  return request.delete(`/finance/payable/${id}`);
 }
 
 // Payment
@@ -63,4 +85,12 @@ export function addPayment(data: any): Promise<any> {
 
 export function deletePayment(id: number): Promise<any> {
   return request.delete(`/finance/payment/${id}`);
+}
+
+export function auditPayment(id: number): Promise<any> {
+  return request.put(`/finance/payment/${id}/audit`);
+}
+
+export function unauditPayment(id: number): Promise<any> {
+  return request.put(`/finance/payment/${id}/unaudit`);
 }

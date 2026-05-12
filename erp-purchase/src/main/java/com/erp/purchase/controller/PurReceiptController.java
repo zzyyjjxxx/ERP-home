@@ -56,4 +56,28 @@ public class PurReceiptController extends BaseController {
         receiptService.auditReceipt(id);
         return Result.ok();
     }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("purchase:receipt:audit")
+    @OperLog(module = "采购管理", action = "反审核收货单")
+    public Result<?> unaudit(@PathVariable Long id) {
+        receiptService.unauditReceipt(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    @RequirePermission("purchase:receipt:edit")
+    @OperLog(module = "采购管理", action = "编辑收货单")
+    public Result<?> update(@PathVariable Long id, @RequestBody PurReceipt receipt) {
+        receipt.setId(id);
+        receiptService.updateById(receipt);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    @RequirePermission("purchase:receipt:delete")
+    public Result<?> delete(@PathVariable Long id) {
+        receiptService.removeById(id);
+        return Result.ok();
+    }
 }

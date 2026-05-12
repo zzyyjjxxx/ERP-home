@@ -1,5 +1,6 @@
 package com.erp.finance.controller;
 
+import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
@@ -18,6 +19,7 @@ public class FinVoucherController extends BaseController {
     private final FinVoucherService voucherService;
 
     @GetMapping("/list")
+    @RequirePermission("finance:voucher:list")
     public Result<PageResult<FinVoucher>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
@@ -38,6 +40,7 @@ public class FinVoucherController extends BaseController {
     }
 
     @PostMapping
+    @RequirePermission("finance:voucher:add")
     public Result<?> create(@RequestBody FinVoucher voucher) {
         List<FinVoucherItem> items = voucher.getChildren() != null ? voucher.getChildren() : List.of();
         voucherService.createVoucher(voucher, items);
@@ -45,8 +48,31 @@ public class FinVoucherController extends BaseController {
     }
 
     @PutMapping("/{id}/audit")
+    @RequirePermission("finance:voucher:audit")
     public Result<?> audit(@PathVariable Long id) {
         voucherService.auditVoucher(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}/unaudit")
+    @RequirePermission("finance:voucher:audit")
+    public Result<?> unaudit(@PathVariable Long id) {
+        voucherService.unauditVoucher(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    @RequirePermission("finance:voucher:edit")
+    public Result<?> update(@PathVariable Long id, @RequestBody FinVoucher voucher) {
+        voucher.setId(id);
+        voucherService.updateById(voucher);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    @RequirePermission("finance:voucher:delete")
+    public Result<?> delete(@PathVariable Long id) {
+        voucherService.removeById(id);
         return Result.ok();
     }
 }

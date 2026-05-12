@@ -4,8 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.erp.common.exception.BusinessException;
+import com.erp.sales.entity.SalDelivery;
+import com.erp.sales.entity.SalDeliveryItem;
 import com.erp.sales.entity.SalOrder;
 import com.erp.sales.entity.SalOrderItem;
+import com.erp.sales.mapper.SalDeliveryItemMapper;
+import com.erp.sales.mapper.SalDeliveryMapper;
 import com.erp.sales.mapper.SalOrderItemMapper;
 import com.erp.sales.mapper.SalOrderMapper;
 import com.erp.sales.service.SalOrderService;
@@ -22,6 +26,8 @@ import java.util.List;
 public class SalOrderServiceImpl extends ServiceImpl<SalOrderMapper, SalOrder> implements SalOrderService {
 
     private final SalOrderItemMapper orderItemMapper;
+    private final SalDeliveryMapper deliveryMapper;
+    private final SalDeliveryItemMapper deliveryItemMapper;
 
     @Override
     public Page<SalOrder> pageOrders(int pageNum, int pageSize, Integer status, Long customerId) {
@@ -58,6 +64,59 @@ public class SalOrderServiceImpl extends ServiceImpl<SalOrderMapper, SalOrder> i
         order.setStatus(2);
         order.setAuditTime(LocalDateTime.now());
         updateById(order);
+    }
+
+    @Override
+    @Transactional
+    public void unauditOrder(Long id) {
+        SalOrder order = getById(id);
+        if (order == null) throw new BusinessException("订单不存在");
+        if (order.getStatus() != 2) throw new BusinessException("只能反审核已审状态的订单");
+        order.setStatus(1);
+        order.setAuditTime(null);
+        order.setAuditorId(null);
+        updateById(order);
+    }
+
+    @Override
+    @Transactional
+    public SalDelivery pushDownToDelivery(Long orderId) {
+        SalOrder order = getById(orderId);
+        if (order == null) throw new BusinessException("订单不存在");
+        if (order.getStatus() != 2) throw new BusinessException("只能下推已审核的订单");
+        List<SalOrderItem> orderItems = getOrderItems(orderId);
+        if (orderItems.isEmpty()) throw new BusinessException("订单无明细，不能下推");
+
+        SalDelivery delivery = new SalDelivery();
+        delivery.setDeliveryNo("SD" + LocalDate.now().toString().replace("-", "") + System.nanoTime() % 100000);
+        delivery.setOrderId(orderId);
+        delivery.setCustomerId(order.getCustomerId());
+        delivery.setWarehouseId(order.getWarehouseId());
+        delivery.setDeliveryDate(LocalDate.now());
+        delivery.setStatus(0);
+        BigDecimal totalQty = BigDecimal.ZERO;
+        for (SalOrderItem item : orderItems) {
+            totalQty = totalQty.add(item.getQuantity());
+        }
+        delivery.setTotalQty(totalQty);
+        deliveryMapper.insert(delivery);
+
+        for (SalOrderItem item : orderItems) {
+            SalDeliveryItem deliveryItem = new SalDeliveryItem();
+            deliveryItem.setDeliveryId(delivery.getId());
+            deliveryItem.setProductId(item.getProductId());
+            deliveryItem.setOrderQty(item.getQuantity());
+            deliveryItem.setDeliveryQty(item.getQuantity().subtract(
+                    item.getDeliveredQty() != null ? item.getDeliveredQty() : BigDecimal.ZERO));
+            deliveryItem.setWarehouseId(order.getWarehouseId());
+            deliveryItem.setUnitPrice(item.getUnitPrice());
+            deliveryItem.setAmount(item.getAmount());
+            deliveryItemMapper.insert(deliveryItem);
+        }
+
+        order.setStatus(3);
+        updateById(order);
+        return delivery;
     }
 
     @Override

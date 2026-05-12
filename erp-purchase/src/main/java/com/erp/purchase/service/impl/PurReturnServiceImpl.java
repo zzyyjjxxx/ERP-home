@@ -69,6 +69,16 @@ public class PurReturnServiceImpl extends ServiceImpl<PurReturnMapper, PurReturn
     }
 
     @Override
+    @Transactional
+    public void unauditReturn(Long id) {
+        PurReturn purReturn = getById(id);
+        if (purReturn == null) throw new BusinessException("退货单不存在");
+        if (purReturn.getStatus() != 1) throw new BusinessException("只能反审核已完成状态的退货单");
+        purReturn.setStatus(0);
+        updateById(purReturn);
+    }
+
+    @Override
     public List<PurReturnItem> getReturnItems(Long returnId) {
         LambdaQueryWrapper<PurReturnItem> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PurReturnItem::getReturnId, returnId);

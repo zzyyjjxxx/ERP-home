@@ -3,7 +3,7 @@ import { ProTable, ModalForm, ProFormSelect, ProFormDatePicker, ProFormText } fr
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Tag, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { getDeliveryList, addDelivery, updateDelivery, deleteDelivery, auditDelivery, getAllCustomers } from '@/services/sales';
+import { getDeliveryList, addDelivery, updateDelivery, deleteDelivery, auditDelivery, unauditDelivery, getAllCustomers } from '@/services/sales';
 import { getWarehouseList } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
@@ -50,6 +50,7 @@ export default function DeliveryList() {
               <PermissionBtn permission="sales:delivery:audit" type="link" onClick={async () => { await auditDelivery(record.id); message.success('审核成功'); actionRef.current?.reload(); }}>审核</PermissionBtn>
             </>
           )}
+          {record.status === 1 && <PermissionBtn permission="sales:delivery:unaudit" type="link" onClick={async () => { await unauditDelivery(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
           <PermissionBtn permission="sales:delivery:delete" type="link" danger>
             <Popconfirm title="确定删除?" onConfirm={async () => { await deleteDelivery(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
           </PermissionBtn>

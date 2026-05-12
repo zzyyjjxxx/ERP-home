@@ -64,6 +64,18 @@ public class SalDeliveryServiceImpl extends ServiceImpl<SalDeliveryMapper, SalDe
     }
 
     @Override
+    @Transactional
+    public void unauditDelivery(Long id) {
+        SalDelivery delivery = getById(id);
+        if (delivery == null) throw new BusinessException("发货单不存在");
+        if (delivery.getStatus() != 1) throw new BusinessException("只能反审核已完成状态的发货单");
+        delivery.setStatus(0);
+        delivery.setAuditTime(null);
+        delivery.setAuditorId(null);
+        updateById(delivery);
+    }
+
+    @Override
     public List<SalDeliveryItem> getDeliveryItems(Long deliveryId) {
         LambdaQueryWrapper<SalDeliveryItem> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SalDeliveryItem::getDeliveryId, deliveryId);

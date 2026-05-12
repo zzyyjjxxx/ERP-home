@@ -10,5 +10,6 @@ public interface PurReceiptService extends IService<PurReceipt> {
     Page<PurReceipt> pageReceipts(int pageNum, int pageSize, Integer status);
     void createReceipt(PurReceipt receipt, List<PurReceiptItem> items);
     void auditReceipt(Long id);
+    void unauditReceipt(Long id);
     List<PurReceiptItem> getReceiptItems(Long receiptId);
 }

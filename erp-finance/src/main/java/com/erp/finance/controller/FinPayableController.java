@@ -27,4 +27,28 @@ public class FinPayableController extends BaseController {
                         .orderByDesc(FinPayable::getCreateTime));
         return pageResult(page);
     }
+
+    @GetMapping("/{id}")
+    public Result<FinPayable> getById(@PathVariable Long id) {
+        return Result.ok(payableMapper.selectById(id));
+    }
+
+    @PostMapping
+    public Result<?> add(@RequestBody FinPayable payable) {
+        payableMapper.insert(payable);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}")
+    public Result<?> update(@PathVariable Long id, @RequestBody FinPayable payable) {
+        payable.setId(id);
+        payableMapper.updateById(payable);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result<?> delete(@PathVariable Long id) {
+        payableMapper.deleteById(id);
+        return Result.ok();
+    }
 }

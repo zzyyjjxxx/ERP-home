@@ -1,8 +1,10 @@
-import { useRef } from 'react';
-import { ProTable } from '@ant-design/pro-components';
+import { useRef, useState } from 'react';
+import { ProTable, ModalForm, ProFormText, ProFormDigit, ProFormDatePicker } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Tag } from 'antd';
-import { getPayableList } from '@/services/finance';
+import { Tag, Space, message, Popconfirm } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { getPayableList, addPayable, updatePayable, deletePayable, auditPayment } from '@/services/finance';
+import PermissionBtn from '@/components/PermissionBtn';
 
 const STATUS_MAP: Record<number, { text: string; color: string }> = {
   0: { text: '未付', color: 'red' },
@@ -11,11 +13,15 @@ const STATUS_MAP: Record<number, { text: string; color: string }> = {
 };
 
 export default function PayableList() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null!);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editRecord, setEditRecord] = useState<any>(null);
 
   const columns: ProColumns[] = [
     { title: '供应商', dataIndex: 'supplierName', key: 'supplierName' },
+    { title: '供应商ID', dataIndex: 'supplierId', key: 'supplierId', hideInTable: true },
     { title: '业务单号', dataIndex: 'bizNo', key: 'bizNo', search: false },
+    { title: '业务类型', dataIndex: 'bizType', key: 'bizType', search: false },
     {
       title: '应付金额', dataIndex: 'amount', key: 'amount',
       search: false, valueType: 'money', width: 130,
@@ -39,19 +45,55 @@ export default function PayableList() {
         return info ? <Tag color={info.color}>{info.text}</Tag> : <Tag>未知</Tag>;
       },
     },
-    { title: '备注', dataIndex: 'remark', key: 'remark', search: false, ellipsis: true },
+    {
+      title: '操作', key: 'action', search: false,
+      render: (_, record) => (
+        <Space>
+          {(record.status === 0 || record.status === 1) && <PermissionBtn permission="finance:payment:audit" type="link" onClick={async () => { await auditPayment(record.id); message.success('付款成功'); actionRef.current?.reload(); }}>付款</PermissionBtn>}
+          <PermissionBtn permission="finance:payable:edit" type="link" onClick={() => { setEditRecord(record); setModalOpen(true); }}>编辑</PermissionBtn>
+          <PermissionBtn permission="finance:payable:delete" type="link" danger>
+            <Popconfirm title="确定删除?" onConfirm={async () => { await deletePayable(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
+          </PermissionBtn>
+        </Space>
+      ),
+    },
   ];
 
   return (
-    <ProTable
-      columns={columns}
-      request={async (params) => {
-        const data = await getPayableList(params);
-        return { data: data.records, total: data.total, success: true };
-      }}
-      actionRef={actionRef}
-      rowKey="id"
-      search={{ labelWidth: 'auto' }}
-    />
+    <>
+      <ProTable
+        columns={columns}
+        request={async (params) => {
+          const data = await getPayableList(params);
+          return { data: data.records, total: data.total, success: true };
+        }}
+        actionRef={actionRef}
+        rowKey="id"
+        search={{ labelWidth: 'auto' }}
+        toolBarRender={() => [
+          <PermissionBtn key="add" permission="finance:payable:add" type="primary" icon={<PlusOutlined />} onClick={() => { setEditRecord(null); setModalOpen(true); }}>新增应付</PermissionBtn>,
+        ]}
+      />
+      <ModalForm
+        title={editRecord ? '编辑应付' : '新增应付'}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        initialValues={editRecord}
+        onFinish={async (values) => {
+          editRecord ? await updatePayable(editRecord.id, values) : await addPayable(values);
+          message.success(editRecord ? '修改成功' : '新增成功');
+          actionRef.current?.reload();
+          return true;
+        }}
+      >
+        <ProFormDigit name="supplierId" label="供应商ID" rules={[{ required: true }]} />
+        <ProFormText name="bizType" label="业务类型" />
+        <ProFormText name="bizNo" label="业务单号" />
+        <ProFormDigit name="amount" label="应付金额" fieldProps={{ precision: 2 }} rules={[{ required: true }]} />
+        <ProFormDigit name="paidAmount" label="已付金额" fieldProps={{ precision: 2 }} initialValue={0} />
+        <ProFormDigit name="balance" label="余额" fieldProps={{ precision: 2 }} />
+        <ProFormDatePicker name="dueDate" label="到期日" />
+      </ModalForm>
+    </>
   );
 }

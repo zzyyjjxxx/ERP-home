@@ -10,5 +10,6 @@ public interface SalDeliveryService extends IService<SalDelivery> {
     Page<SalDelivery> pageDeliveries(int pageNum, int pageSize, Integer status);
     void createDelivery(SalDelivery delivery, List<SalDeliveryItem> items);
     void auditDelivery(Long id);
+    void unauditDelivery(Long id);
     List<SalDeliveryItem> getDeliveryItems(Long deliveryId);
 }

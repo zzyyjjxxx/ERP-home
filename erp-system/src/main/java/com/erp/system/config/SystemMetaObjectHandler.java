@@ -1,12 +1,11 @@
 package com.erp.system.config;
 
-import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class MetaObjectHandler implements MetaObjectHandler {
+public class SystemMetaObjectHandler implements com.baomidou.mybatisplus.core.handlers.MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());

@@ -3,8 +3,9 @@ import { ProTable, ModalForm, ProFormText, ProFormSelect, ProFormDigit, ProFormT
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Tag, Button, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { getTransferList, addTransfer, updateTransfer, deleteTransfer, auditTransfer, getWarehouseList } from '@/services/inventory';
+import { getTransferList, addTransfer, updateTransfer, deleteTransfer, auditTransfer, unauditTransfer, getWarehouseList } from '@/services/inventory';
 import { getAllProducts } from '@/services/inventory';
+import PermissionBtn from '@/components/PermissionBtn';
 
 export default function TransferList() {
   const actionRef = useRef<ActionType>(null!);
@@ -43,6 +44,7 @@ export default function TransferList() {
               <Button type="link">审核</Button>
             </Popconfirm>
           )}
+          {record.status === 1 && <PermissionBtn permission="inventory:transfer:unaudit" type="link" onClick={async () => { await unauditTransfer(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
           <Button type="link" onClick={() => { setEditRecord(record); setModalOpen(true); }} disabled={record.status !== 0}>编辑</Button>
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deleteTransfer(record.id);

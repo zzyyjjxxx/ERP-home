@@ -3,7 +3,7 @@ import { ProTable, ModalForm, ProFormSelect, ProFormDatePicker, ProFormText } fr
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Tag, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { getReceiptList, addReceipt, updateReceipt, deleteReceipt, auditReceipt, getAllSuppliers } from '@/services/purchase';
+import { getReceiptList, addReceipt, updateReceipt, deleteReceipt, auditReceipt, unauditReceipt, getAllSuppliers } from '@/services/purchase';
 import { getWarehouseList } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
@@ -52,6 +52,7 @@ export default function ReceiptList() {
               <PermissionBtn permission="purchase:receipt:audit" type="link" onClick={async () => { await auditReceipt(record.id); message.success('审核成功'); actionRef.current?.reload(); }}>审核</PermissionBtn>
             </>
           )}
+          {record.status === 1 && <PermissionBtn permission="purchase:receipt:unaudit" type="link" onClick={async () => { await unauditReceipt(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
           <PermissionBtn permission="purchase:receipt:delete" type="link" danger>
             <Popconfirm title="确定删除?" onConfirm={async () => { await deleteReceipt(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
           </PermissionBtn>

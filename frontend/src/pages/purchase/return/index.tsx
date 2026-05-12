@@ -3,7 +3,7 @@ import { ProTable, ModalForm, ProFormSelect, ProFormDatePicker, ProFormText, Pro
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Tag, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { getReturnList, addReturn, updateReturn, deleteReturn, completeReturn, getAllSuppliers } from '@/services/purchase';
+import { getReturnList, addReturn, updateReturn, deleteReturn, completeReturn, unauditReturn, getAllSuppliers } from '@/services/purchase';
 import { getWarehouseList } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
@@ -50,6 +50,7 @@ export default function ReturnList() {
               <PermissionBtn permission="purchase:return:audit" type="link" onClick={async () => { await completeReturn(record.id); message.success('完成'); actionRef.current?.reload(); }}>完成</PermissionBtn>
             </>
           )}
+          {record.status === 1 && <PermissionBtn permission="purchase:return:unaudit" type="link" onClick={async () => { await unauditReturn(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
           <PermissionBtn permission="purchase:return:delete" type="link" danger>
             <Popconfirm title="确定删除?" onConfirm={async () => { await deleteReturn(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
           </PermissionBtn>
