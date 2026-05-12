@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Dropdown, Avatar } from 'antd';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined,
-  SettingOutlined, ShoppingOutlined, InboxOutlined,
+  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useUserStore } from '@/stores/userStore';
@@ -28,6 +28,11 @@ const menuItems: MenuProps['items'] = [
     { key: '/inventory/product', label: '商品管理' },
     { key: '/inventory/warehouse', label: '仓库管理' },
     { key: '/inventory/stock', label: '库存查询' },
+  ]},
+  { key: '/sales', icon: <ShopOutlined />, label: '销售管理', children: [
+    { key: '/sales/customer', label: '客户管理' },
+    { key: '/sales/order', label: '销售订单' },
+    { key: '/sales/delivery', label: '销售发货' },
   ]},
 ];
 

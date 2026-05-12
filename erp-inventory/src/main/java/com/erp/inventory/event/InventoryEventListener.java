@@ -3,6 +3,7 @@ package com.erp.inventory.event;
 import com.erp.inventory.service.InvStockService;
 import com.erp.purchase.event.GoodsReceivedEvent;
 import com.erp.purchase.event.GoodsReturnedEvent;
+import com.erp.sales.event.GoodsDeliveredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -33,5 +34,14 @@ public class InventoryEventListener {
                 event.getProductId(), event.getWarehouseId(), event.getQuantity(), event.getBizNo());
         stockService.increaseStock(event.getProductId(), event.getWarehouseId(),
                 event.getQuantity(), "PURCHASE_RETURN", event.getBizNo());
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onGoodsDelivered(GoodsDeliveredEvent event) {
+        log.info("销售出库: productId={}, warehouseId={}, qty={}, bizNo={}",
+                event.getProductId(), event.getWarehouseId(), event.getQuantity(), event.getBizNo());
+        stockService.decreaseStock(event.getProductId(), event.getWarehouseId(),
+                event.getQuantity(), "SALES_OUT", event.getBizNo());
     }
 }
