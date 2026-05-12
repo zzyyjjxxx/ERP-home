@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Slf4j
 @Component
@@ -25,12 +26,32 @@ public class FinanceEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onGoodsReceived(GoodsReceivedEvent event) {
-        log.info("生成应付: bizNo={}", event.getBizNo());
+        log.info("生成应付: bizNo={}, qty={}", event.getBizNo(), event.getQuantity());
+        FinPayable payable = new FinPayable();
+        payable.setSupplierId(0L);
+        payable.setBizType("PURCHASE_RECEIPT");
+        payable.setBizNo(event.getBizNo());
+        payable.setAmount(event.getQuantity());
+        payable.setPaidAmount(BigDecimal.ZERO);
+        payable.setBalance(event.getQuantity());
+        payable.setDueDate(LocalDate.now().plusDays(30));
+        payable.setStatus(0);
+        payableMapper.insert(payable);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onGoodsDelivered(GoodsDeliveredEvent event) {
-        log.info("生成应收: bizNo={}", event.getBizNo());
+        log.info("生成应收: bizNo={}, qty={}", event.getBizNo(), event.getQuantity());
+        FinReceivable receivable = new FinReceivable();
+        receivable.setCustomerId(0L);
+        receivable.setBizType("SALES_DELIVERY");
+        receivable.setBizNo(event.getBizNo());
+        receivable.setAmount(event.getQuantity());
+        receivable.setReceivedAmount(BigDecimal.ZERO);
+        receivable.setBalance(event.getQuantity());
+        receivable.setDueDate(LocalDate.now().plusDays(30));
+        receivable.setStatus(0);
+        receivableMapper.insert(receivable);
     }
 }

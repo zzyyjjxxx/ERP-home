@@ -1,5 +1,6 @@
 package com.erp.finance.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.erp.common.response.Result;
 import com.erp.finance.entity.FinAccountSubject;
 import com.erp.finance.mapper.FinAccountSubjectMapper;
@@ -10,13 +11,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/finance/subject")
 @RequiredArgsConstructor
-public class FinSubjectController {
+public class FinAccountSubjectController {
 
     private final FinAccountSubjectMapper subjectMapper;
 
     @GetMapping("/tree")
     public Result<List<FinAccountSubject>> tree() {
-        return Result.ok(subjectMapper.selectList(null));
+        List<FinAccountSubject> list = subjectMapper.selectList(
+                new LambdaQueryWrapper<FinAccountSubject>()
+                        .orderByAsc(FinAccountSubject::getSort));
+        return Result.ok(list);
     }
 
     @PostMapping

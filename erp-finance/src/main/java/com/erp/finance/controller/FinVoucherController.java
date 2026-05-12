@@ -1,18 +1,13 @@
 package com.erp.finance.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.finance.entity.FinVoucher;
 import com.erp.finance.entity.FinVoucherItem;
-import com.erp.finance.mapper.FinVoucherItemMapper;
-import com.erp.finance.mapper.FinVoucherMapper;
+import com.erp.finance.service.FinVoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -20,45 +15,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FinVoucherController extends BaseController {
 
-    private final FinVoucherMapper voucherMapper;
-    private final FinVoucherItemMapper itemMapper;
+    private final FinVoucherService voucherService;
 
     @GetMapping("/list")
     public Result<PageResult<FinVoucher>> list(
             @RequestParam(defaultValue = "1") int pageNum,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        Page<FinVoucher> page = voucherMapper.selectPage(new Page<>(pageNum, pageSize),
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<FinVoucher>()
-                        .orderByDesc(FinVoucher::getCreateTime));
-        return pageResult(page);
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) Integer status) {
+        return pageResult(voucherService.pageVouchers(pageNum, pageSize, status));
+    }
+
+    @GetMapping("/{id}")
+    public Result<FinVoucher> getById(@PathVariable Long id) {
+        FinVoucher voucher = voucherService.getById(id);
+        voucher.setChildren(voucherService.getVoucherItems(id));
+        return Result.ok(voucher);
     }
 
     @GetMapping("/{id}/items")
     public Result<List<FinVoucherItem>> getItems(@PathVariable Long id) {
-        List<FinVoucherItem> items = itemMapper.selectList(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<FinVoucherItem>()
-                        .eq(FinVoucherItem::getVoucherId, id));
-        return Result.ok(items);
+        return Result.ok(voucherService.getVoucherItems(id));
     }
 
     @PostMapping
-    public Result<?> add(@RequestBody FinVoucher voucher) {
-        voucher.setVoucherNo(generateNo());
-        voucher.setStatus(0);
-        voucher.setTotalDebit(BigDecimal.ZERO);
-        voucher.setTotalCredit(BigDecimal.ZERO);
-        voucherMapper.insert(voucher);
+    public Result<?> create(@RequestBody FinVoucher voucher) {
+        List<FinVoucherItem> items = voucher.getChildren() != null ? voucher.getChildren() : List.of();
+        voucherService.createVoucher(voucher, items);
         return Result.ok();
     }
 
-    @DeleteMapping("/{id}")
-    public Result<?> delete(@PathVariable Long id) {
-        voucherMapper.deleteById(id);
+    @PutMapping("/{id}/audit")
+    public Result<?> audit(@PathVariable Long id) {
+        voucherService.auditVoucher(id);
         return Result.ok();
-    }
-
-    private String generateNo() {
-        return "PZ" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) +
-                String.format("%04d", System.currentTimeMillis() % 10000);
     }
 }
