@@ -6,6 +6,7 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
+import com.erp.purchase.dto.CreateOrderRequest;
 import com.erp.purchase.entity.PurOrder;
 import com.erp.purchase.entity.PurOrderItem;
 import com.erp.purchase.service.PurOrderService;
@@ -44,8 +45,8 @@ public class PurOrderController extends BaseController {
     @PostMapping
     @RequirePermission("purchase:order:add")
     @OperLog(module = "采购管理", action = "新增采购订单")
-    public Result<?> add(@RequestBody PurOrder order) {
-        orderService.createOrder(order, List.of());
+    public Result<?> add(@RequestBody CreateOrderRequest request) {
+        orderService.createOrder(request.getOrder(), request.getItems() != null ? request.getItems() : List.of());
         return Result.ok();
     }
 

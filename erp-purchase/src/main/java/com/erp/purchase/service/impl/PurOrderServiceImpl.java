@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -40,13 +39,10 @@ public class PurOrderServiceImpl extends ServiceImpl<PurOrderMapper, PurOrder> i
     @Transactional
     public void createOrder(PurOrder order, List<PurOrderItem> items) {
         order.setOrderNo(generateOrderNo());
+        order.setOrderDate(LocalDate.now());
         order.setStatus(0);
-        BigDecimal totalQty = BigDecimal.ZERO;
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        for (PurOrderItem item : items) {
-            totalQty = totalQty.add(item.getQuantity());
-            totalAmount = totalAmount.add(item.getAmount());
-        }
+        BigDecimal totalQty = items.stream().map(PurOrderItem::getQuantity).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalAmount = items.stream().map(PurOrderItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalQty(totalQty);
         order.setTotalAmount(totalAmount);
         save(order);
@@ -61,7 +57,7 @@ public class PurOrderServiceImpl extends ServiceImpl<PurOrderMapper, PurOrder> i
     public void auditOrder(Long id) {
         PurOrder order = getById(id);
         if (order == null) throw new BusinessException("订单不存在");
-        if (order.getStatus() != 1) throw new BusinessException("只有待审状态的订单才能审核");
+        if (order.getStatus() != 1) throw new BusinessException("只能审核待审状态的订单");
         order.setStatus(2);
         order.setAuditTime(LocalDateTime.now());
         updateById(order);
@@ -72,6 +68,7 @@ public class PurOrderServiceImpl extends ServiceImpl<PurOrderMapper, PurOrder> i
     public void cancelOrder(Long id) {
         PurOrder order = getById(id);
         if (order == null) throw new BusinessException("订单不存在");
+        if (order.getStatus() >= 4) throw new BusinessException("已完成或已取消的订单不能取消");
         order.setStatus(5);
         updateById(order);
     }
@@ -84,7 +81,6 @@ public class PurOrderServiceImpl extends ServiceImpl<PurOrderMapper, PurOrder> i
     }
 
     private String generateOrderNo() {
-        return "PO" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) +
-                String.format("%04d", System.currentTimeMillis() % 10000);
+        return "PO" + LocalDate.now().toString().replace("-", "") + System.nanoTime() % 100000;
     }
 }

@@ -6,6 +6,7 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
+import com.erp.purchase.dto.CreateReceiptRequest;
 import com.erp.purchase.entity.PurReceipt;
 import com.erp.purchase.entity.PurReceiptItem;
 import com.erp.purchase.service.PurReceiptService;
@@ -43,8 +44,8 @@ public class PurReceiptController extends BaseController {
     @PostMapping
     @RequirePermission("purchase:receipt:add")
     @OperLog(module = "采购管理", action = "新增收货单")
-    public Result<?> add(@RequestBody PurReceipt receipt) {
-        receiptService.createReceipt(receipt, List.of());
+    public Result<?> add(@RequestBody CreateReceiptRequest request) {
+        receiptService.createReceipt(request.getReceipt(), request.getItems() != null ? request.getItems() : List.of());
         return Result.ok();
     }
 

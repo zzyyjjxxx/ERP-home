@@ -6,6 +6,7 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
+import com.erp.purchase.dto.CreateReturnRequest;
 import com.erp.purchase.entity.PurReturn;
 import com.erp.purchase.entity.PurReturnItem;
 import com.erp.purchase.service.PurReturnService;
@@ -43,8 +44,8 @@ public class PurReturnController extends BaseController {
     @PostMapping
     @RequirePermission("purchase:return:add")
     @OperLog(module = "采购管理", action = "新增退货单")
-    public Result<?> add(@RequestBody PurReturn purReturn) {
-        returnService.createReturn(purReturn, List.of());
+    public Result<?> add(@RequestBody CreateReturnRequest request) {
+        returnService.createReturn(request.getPurReturn(), request.getItems() != null ? request.getItems() : List.of());
         return Result.ok();
     }
 
