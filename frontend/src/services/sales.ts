@@ -24,6 +24,10 @@ export function getOrderList(params: any) {
   return request.get('/sales/order/list', { params });
 }
 
+export function getOrderDetail(id: number) {
+  return request.get(`/sales/order/${id}`);
+}
+
 export function getOrderItems(id: number) {
   return request.get(`/sales/order/${id}/items`);
 }
@@ -48,10 +52,26 @@ export function getDeliveryList(params: any) {
   return request.get('/sales/delivery/list', { params });
 }
 
+export function getDeliveryItems(id: number) {
+  return request.get(`/sales/delivery/${id}/items`);
+}
+
 export function addDelivery(data: any) {
   return request.post('/sales/delivery', data);
 }
 
 export function auditDelivery(id: number) {
   return request.put(`/sales/delivery/${id}/audit`);
+}
+
+export function getReturnList(params: any) {
+  return request.get('/sales/return/list', { params });
+}
+
+export function addReturn(data: any) {
+  return request.post('/sales/return', data);
+}
+
+export function completeReturn(id: number) {
+  return request.put(`/sales/return/${id}/complete`);
 }

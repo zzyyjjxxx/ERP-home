@@ -36,6 +36,7 @@ const menuItems: MenuProps['items'] = [
     { key: '/sales/customer', label: '客户管理' },
     { key: '/sales/order', label: '销售订单' },
     { key: '/sales/delivery', label: '销售发货' },
+    { key: '/sales/return', label: '销售退货' },
   ]},
   { key: '/finance', icon: <DollarOutlined />, label: '财务管理', children: [
     { key: '/finance/subject', label: '会计科目' },

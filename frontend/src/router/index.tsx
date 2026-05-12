@@ -18,6 +18,7 @@ import CheckList from '@/pages/inventory/check';
 import CustomerList from '@/pages/sales/customer';
 import SalesOrderList from '@/pages/sales/order';
 import DeliveryList from '@/pages/sales/delivery';
+import SalesReturnList from '@/pages/sales/return';
 import SubjectList from '@/pages/finance/subject';
 import VoucherList from '@/pages/finance/voucher';
 import ReceivableList from '@/pages/finance/receivable';
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
       { path: 'sales/customer', element: <CustomerList /> },
       { path: 'sales/order', element: <SalesOrderList /> },
       { path: 'sales/delivery', element: <DeliveryList /> },
+      { path: 'sales/return', element: <SalesReturnList /> },
       { path: 'finance/subject', element: <SubjectList /> },
       { path: 'finance/voucher', element: <VoucherList /> },
       { path: 'finance/receivable', element: <ReceivableList /> },
