@@ -1,0 +1,14 @@
+package com.erp.purchase.event;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import java.math.BigDecimal;
+
+@Data
+@AllArgsConstructor
+public class GoodsReceivedEvent {
+    private Long productId;
+    private Long warehouseId;
+    private BigDecimal quantity;
+    private String bizNo;
+}
