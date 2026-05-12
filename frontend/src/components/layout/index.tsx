@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Dropdown, Avatar } from 'antd';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined,
-  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined, DollarOutlined, ToolOutlined, DashboardOutlined,
+  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined, DollarOutlined, ToolOutlined, HomeOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useUserStore } from '@/stores/userStore';
@@ -12,7 +12,7 @@ import { getUserInfo } from '@/services/auth';
 const { Header, Sider, Content } = Layout;
 
 const menuItems: MenuProps['items'] = [
-  { key: '/dashboard', icon: <DashboardOutlined />, label: '首页' },
+  { key: '/', icon: <HomeOutlined />, label: '首页' },
   { key: '/system', icon: <SettingOutlined />, label: '系统管理', children: [
     { key: '/system/user', label: '用户管理' },
     { key: '/system/role', label: '角色管理' },
