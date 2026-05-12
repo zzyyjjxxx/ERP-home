@@ -25,7 +25,7 @@ public class EventRetryTask {
     public void retryFailedEvents() {
         LambdaQueryWrapper<SysEventRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysEventRecord::getStatus, 0)
-                .lt(SysEventRecord::getRetryCount, 3);
+                .lt(SysEventRecord::getRetryCount, SysEventRecord::getMaxRetry);
         List<SysEventRecord> events = eventRecordMapper.selectList(wrapper);
 
         for (SysEventRecord record : events) {
@@ -36,9 +36,11 @@ public class EventRetryTask {
             } catch (Exception e) {
                 record.setRetryCount(record.getRetryCount() + 1);
                 record.setLastError(e.getMessage());
-                if (record.getRetryCount() >= 3) {
+                if (record.getRetryCount() >= record.getMaxRetry()) {
                     record.setStatus(2);
-                    log.error("事件重试失败，eventId={}", record.getId(), e);
+                    log.error("事件重试最终失败 eventId={} eventName={}", record.getId(), record.getEventName(), e);
+                } else {
+                    log.warn("事件重试失败 eventId={} retry={}", record.getId(), record.getRetryCount());
                 }
             }
             eventRecordMapper.updateById(record);
