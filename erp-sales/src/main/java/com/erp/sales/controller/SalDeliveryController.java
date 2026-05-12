@@ -6,6 +6,7 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
+import com.erp.sales.dto.CreateDeliveryRequest;
 import com.erp.sales.entity.SalDelivery;
 import com.erp.sales.entity.SalDeliveryItem;
 import com.erp.sales.service.SalDeliveryService;
@@ -30,6 +31,11 @@ public class SalDeliveryController extends BaseController {
         return pageResult(page);
     }
 
+    @GetMapping("/{id}")
+    public Result<SalDelivery> getById(@PathVariable Long id) {
+        return Result.ok(deliveryService.getById(id));
+    }
+
     @GetMapping("/{id}/items")
     public Result<List<SalDeliveryItem>> getItems(@PathVariable Long id) {
         return Result.ok(deliveryService.getDeliveryItems(id));
@@ -38,8 +44,8 @@ public class SalDeliveryController extends BaseController {
     @PostMapping
     @RequirePermission("sales:delivery:add")
     @OperLog(module = "销售管理", action = "新增发货单")
-    public Result<?> add(@RequestBody SalDelivery delivery) {
-        deliveryService.createDelivery(delivery, List.of());
+    public Result<?> add(@RequestBody CreateDeliveryRequest request) {
+        deliveryService.createDelivery(request.getDelivery(), request.getItems() != null ? request.getItems() : List.of());
         return Result.ok();
     }
 

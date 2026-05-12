@@ -38,6 +38,11 @@ public class SalCustomerController extends BaseController {
         return Result.ok(customerService.list());
     }
 
+    @GetMapping("/{id}")
+    public Result<SalCustomer> getById(@PathVariable Long id) {
+        return Result.ok(customerService.getById(id));
+    }
+
     @PostMapping
     @RequirePermission("sales:customer:add")
     @OperLog(module = "销售管理", action = "新增客户")
@@ -48,6 +53,7 @@ public class SalCustomerController extends BaseController {
 
     @PutMapping("/{id}")
     @RequirePermission("sales:customer:edit")
+    @OperLog(module = "销售管理", action = "编辑客户")
     public Result<?> update(@PathVariable Long id, @RequestBody SalCustomer customer) {
         customer.setId(id);
         customerService.updateById(customer);

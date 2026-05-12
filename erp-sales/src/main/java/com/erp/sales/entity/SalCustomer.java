@@ -15,6 +15,9 @@ public class SalCustomer extends BaseEntity {
     private String phone;
     private String email;
     private String address;
+    private String bankName;
+    private String bankAccount;
+    private String taxNo;
     private Integer status;
     private String remark;
 }

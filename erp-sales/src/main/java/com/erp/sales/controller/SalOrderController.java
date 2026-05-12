@@ -6,15 +6,12 @@ import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
+import com.erp.sales.dto.CreateOrderRequest;
 import com.erp.sales.entity.SalOrder;
 import com.erp.sales.entity.SalOrderItem;
-import com.erp.sales.mapper.SalOrderMapper;
-import com.erp.sales.mapper.SalOrderItemMapper;
 import com.erp.sales.service.SalOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -35,6 +32,11 @@ public class SalOrderController extends BaseController {
         return pageResult(page);
     }
 
+    @GetMapping("/{id}")
+    public Result<SalOrder> getById(@PathVariable Long id) {
+        return Result.ok(orderService.getById(id));
+    }
+
     @GetMapping("/{id}/items")
     public Result<List<SalOrderItem>> getItems(@PathVariable Long id) {
         return Result.ok(orderService.getOrderItems(id));
@@ -43,8 +45,8 @@ public class SalOrderController extends BaseController {
     @PostMapping
     @RequirePermission("sales:order:add")
     @OperLog(module = "销售管理", action = "新增销售订单")
-    public Result<?> add(@RequestBody SalOrder order) {
-        orderService.createOrder(order, List.of());
+    public Result<?> add(@RequestBody CreateOrderRequest request) {
+        orderService.createOrder(request.getOrder(), request.getItems() != null ? request.getItems() : List.of());
         return Result.ok();
     }
 

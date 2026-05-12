@@ -42,7 +42,6 @@ public class SalOrderServiceImpl extends ServiceImpl<SalOrderMapper, SalOrder> i
         BigDecimal totalAmount = items.stream().map(SalOrderItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalQty(totalQty);
         order.setTotalAmount(totalAmount);
-        order.setActualAmount(totalAmount.subtract(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO));
         save(order);
         for (SalOrderItem item : items) {
             item.setOrderId(order.getId());

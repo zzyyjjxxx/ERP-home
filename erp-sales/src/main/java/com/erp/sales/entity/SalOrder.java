@@ -19,8 +19,6 @@ public class SalOrder extends BaseEntity {
     private Long warehouseId;
     private BigDecimal totalQty;
     private BigDecimal totalAmount;
-    private BigDecimal discountAmount;
-    private BigDecimal actualAmount;
     private Integer status;
     private Long auditorId;
     private LocalDateTime auditTime;

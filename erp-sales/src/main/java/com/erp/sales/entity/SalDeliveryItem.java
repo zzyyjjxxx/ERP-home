@@ -12,6 +12,7 @@ public class SalDeliveryItem {
     private Long productId;
     private BigDecimal orderQty;
     private BigDecimal deliveryQty;
+    private Long warehouseId;
     private BigDecimal unitPrice;
     private BigDecimal amount;
 }
