@@ -15,5 +15,9 @@
             <groupId>com.erp</groupId>
             <artifactId>erp-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.erp</groupId>
+            <artifactId>erp-inventory</artifactId>
+        </dependency>
     </dependencies>
 </project>

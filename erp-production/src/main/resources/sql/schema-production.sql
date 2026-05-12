@@ -11,7 +11,8 @@ CREATE TABLE prd_bom (
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     create_by BIGINT,
     update_by BIGINT,
-    del_flag TINYINT DEFAULT 0
+    del_flag TINYINT DEFAULT 0,
+    INDEX idx_product (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='BOM表';
 
 CREATE TABLE prd_bom_item (
@@ -42,14 +43,16 @@ CREATE TABLE prd_work_order (
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     create_by BIGINT,
     update_by BIGINT,
-    del_flag TINYINT DEFAULT 0
+    del_flag TINYINT DEFAULT 0,
+    INDEX idx_product (product_id),
+    INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='工单表';
 
 CREATE TABLE prd_work_order_item (
     id BIGINT PRIMARY KEY,
     work_order_id BIGINT NOT NULL,
     material_id BIGINT NOT NULL,
-    require_qty DECIMAL(18,4),
+    require_qty DECIMAL(18,4) NOT NULL COMMENT '需求数量',
     issued_qty DECIMAL(18,4) DEFAULT 0,
     consumed_qty DECIMAL(18,4) DEFAULT 0,
     INDEX idx_wo (work_order_id)
@@ -78,12 +81,12 @@ CREATE TABLE prd_qc (
     qc_no VARCHAR(50) NOT NULL UNIQUE,
     work_order_id BIGINT,
     product_id BIGINT NOT NULL,
-    check_qty DECIMAL(18,4),
+    check_qty DECIMAL(18,4) DEFAULT 0,
     pass_qty DECIMAL(18,4) DEFAULT 0,
     fail_qty DECIMAL(18,4) DEFAULT 0,
     checker_id BIGINT,
     check_date DATE,
-    result VARCHAR(20) COMMENT 'PASS/FAIL/PARTIAL',
+    result VARCHAR(10) COMMENT 'PASS/FAIL/PARTIAL',
     remark VARCHAR(500),
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
