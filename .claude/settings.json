@@ -26,7 +26,10 @@
       "EnterPlanMode(*)",
       "ExitPlanMode(*)",
       "EnterWorktree(*)",
-      "ExitWorktree(*)"
+      "ExitWorktree(*)",
+      "Bash(mysql *)",
+      "Bash(mysqldump *)",
+      "Bash(mysqladmin *)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

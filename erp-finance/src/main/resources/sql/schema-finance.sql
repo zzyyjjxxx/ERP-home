@@ -21,7 +21,7 @@ CREATE TABLE fin_voucher (
     id BIGINT PRIMARY KEY,
     voucher_no VARCHAR(50) NOT NULL UNIQUE,
     voucher_date DATE NOT NULL,
-    voucher_word VARCHAR(10) DEFAULT '记',
+    voucher_word VARCHAR(10),
     voucher_type VARCHAR(10) COMMENT '收款/付款/转账',
     total_debit DECIMAL(18,2) DEFAULT 0,
     total_credit DECIMAL(18,2) DEFAULT 0,
