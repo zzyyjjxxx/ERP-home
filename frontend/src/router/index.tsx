@@ -23,6 +23,7 @@ import SubjectList from '@/pages/finance/subject';
 import VoucherList from '@/pages/finance/voucher';
 import ReceivableList from '@/pages/finance/receivable';
 import PayableList from '@/pages/finance/payable';
+import ReportPage from '@/pages/finance/report';
 import BomList from '@/pages/production/bom';
 import WorkOrderList from '@/pages/production/workorder';
 import PlanningList from '@/pages/production/planning';
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: 'finance/voucher', element: <VoucherList /> },
       { path: 'finance/receivable', element: <ReceivableList /> },
       { path: 'finance/payable', element: <PayableList /> },
+      { path: 'finance/report', element: <ReportPage /> },
       { path: 'production/bom', element: <BomList /> },
       { path: 'production/workorder', element: <WorkOrderList /> },
       { path: 'production/planning', element: <PlanningList /> },

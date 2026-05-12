@@ -43,6 +43,7 @@ const menuItems: MenuProps['items'] = [
     { key: '/finance/voucher', label: '凭证管理' },
     { key: '/finance/receivable', label: '应收账款' },
     { key: '/finance/payable', label: '应付账款' },
+    { key: '/finance/report', label: '财务报表' },
   ]},
   { key: '/production', icon: <ToolOutlined />, label: '生产管理', children: [
     { key: '/production/bom', label: 'BOM管理' },
