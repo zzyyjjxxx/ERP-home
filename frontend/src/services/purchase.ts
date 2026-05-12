@@ -60,6 +60,14 @@ export function addReceipt(data: any) {
   return request.post('/purchase/receipt', data);
 }
 
+export function updateReceipt(id: number, data: any) {
+  return request.put(`/purchase/receipt/${id}`, data);
+}
+
+export function deleteReceipt(id: number) {
+  return request.delete(`/purchase/receipt/${id}`);
+}
+
 export function auditReceipt(id: number) {
   return request.put(`/purchase/receipt/${id}/audit`);
 }
@@ -70,6 +78,14 @@ export function getReturnList(params: any) {
 
 export function addReturn(data: any) {
   return request.post('/purchase/return', data);
+}
+
+export function updateReturn(id: number, data: any) {
+  return request.put(`/purchase/return/${id}`, data);
+}
+
+export function deleteReturn(id: number) {
+  return request.delete(`/purchase/return/${id}`);
 }
 
 export function completeReturn(id: number) {

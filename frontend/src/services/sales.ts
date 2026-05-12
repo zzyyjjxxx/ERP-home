@@ -36,6 +36,10 @@ export function addOrder(data: any) {
   return request.post('/sales/order', data);
 }
 
+export function updateOrder(id: number, data: any) {
+  return request.put(`/sales/order/${id}`, data);
+}
+
 export function auditOrder(id: number) {
   return request.put(`/sales/order/${id}/audit`);
 }
@@ -60,6 +64,14 @@ export function addDelivery(data: any) {
   return request.post('/sales/delivery', data);
 }
 
+export function updateDelivery(id: number, data: any) {
+  return request.put(`/sales/delivery/${id}`, data);
+}
+
+export function deleteDelivery(id: number) {
+  return request.delete(`/sales/delivery/${id}`);
+}
+
 export function auditDelivery(id: number) {
   return request.put(`/sales/delivery/${id}/audit`);
 }
@@ -70,6 +82,14 @@ export function getReturnList(params: any) {
 
 export function addReturn(data: any) {
   return request.post('/sales/return', data);
+}
+
+export function updateReturn(id: number, data: any) {
+  return request.put(`/sales/return/${id}`, data);
+}
+
+export function deleteReturn(id: number) {
+  return request.delete(`/sales/return/${id}`);
 }
 
 export function completeReturn(id: number) {

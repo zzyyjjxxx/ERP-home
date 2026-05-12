@@ -1,14 +1,30 @@
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Tabs } from 'antd';
-import { getStockList, getStockFlow } from '@/services/inventory';
+import { getStockList, getStockFlow, getAllProducts, getWarehouseList } from '@/services/inventory';
 
 function StockTable() {
   const actionRef = useRef<ActionType>();
+  const [productMap, setProductMap] = useState<Record<number, string>>({});
+  const [warehouseMap, setWarehouseMap] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    getAllProducts().then((data: any) => {
+      const map: Record<number, string> = {};
+      (data || []).forEach((p: any) => { map[p.id] = p.name; });
+      setProductMap(map);
+    });
+    getWarehouseList().then((data: any) => {
+      const map: Record<number, string> = {};
+      (data || []).forEach((w: any) => { map[w.id] = w.name; });
+      setWarehouseMap(map);
+    });
+  }, []);
+
   const columns: ProColumns[] = [
-    { title: '商品ID', dataIndex: 'productId', key: 'productId' },
-    { title: '仓库ID', dataIndex: 'warehouseId', key: 'warehouseId' },
+    { title: '商品', dataIndex: 'productId', key: 'productId', render: (_, record) => productMap[record.productId] || record.productName || record.productId },
+    { title: '仓库', dataIndex: 'warehouseId', key: 'warehouseId', render: (_, record) => warehouseMap[record.warehouseId] || record.warehouseName || record.warehouseId },
     { title: '库存数量', dataIndex: 'quantity', key: 'quantity', search: false },
     { title: '锁定数量', dataIndex: 'lockedQty', key: 'lockedQty', search: false },
   ];
@@ -20,9 +36,25 @@ function StockTable() {
 
 function StockFlowTable() {
   const actionRef = useRef<ActionType>();
+  const [productMap, setProductMap] = useState<Record<number, string>>({});
+  const [warehouseMap, setWarehouseMap] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    getAllProducts().then((data: any) => {
+      const map: Record<number, string> = {};
+      (data || []).forEach((p: any) => { map[p.id] = p.name; });
+      setProductMap(map);
+    });
+    getWarehouseList().then((data: any) => {
+      const map: Record<number, string> = {};
+      (data || []).forEach((w: any) => { map[w.id] = w.name; });
+      setWarehouseMap(map);
+    });
+  }, []);
+
   const columns: ProColumns[] = [
-    { title: '商品ID', dataIndex: 'productId', key: 'productId' },
-    { title: '仓库ID', dataIndex: 'warehouseId', key: 'warehouseId', search: false },
+    { title: '商品', dataIndex: 'productId', key: 'productId', render: (_, record) => productMap[record.productId] || record.productName || record.productId },
+    { title: '仓库', dataIndex: 'warehouseId', key: 'warehouseId', search: false, render: (_, record) => warehouseMap[record.warehouseId] || record.warehouseName || record.warehouseId },
     { title: '业务类型', dataIndex: 'bizType', key: 'bizType' },
     { title: '业务单号', dataIndex: 'bizNo', key: 'bizNo', search: false },
     { title: '变更前', dataIndex: 'beforeQty', key: 'beforeQty', search: false },
