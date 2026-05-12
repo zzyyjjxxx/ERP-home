@@ -15,6 +15,10 @@ import StockPage from '@/pages/inventory/stock';
 import CustomerList from '@/pages/sales/customer';
 import SalesOrderList from '@/pages/sales/order';
 import DeliveryList from '@/pages/sales/delivery';
+import SubjectList from '@/pages/finance/subject';
+import VoucherList from '@/pages/finance/voucher';
+import ReceivableList from '@/pages/finance/receivable';
+import PayableList from '@/pages/finance/payable';
 
 const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -22,7 +26,8 @@ const router = createBrowserRouter([
     path: '/',
     element: <Layout />,
     children: [
-      { index: true, element: <Navigate to="/system/user" replace /> },
+      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { path: 'dashboard', element: <div>仪表盘</div> },
       { path: 'system/user', element: <UserList /> },
       { path: 'system/role', element: <RoleList /> },
       { path: 'system/menu', element: <MenuList /> },
@@ -37,6 +42,10 @@ const router = createBrowserRouter([
       { path: 'sales/customer', element: <CustomerList /> },
       { path: 'sales/order', element: <SalesOrderList /> },
       { path: 'sales/delivery', element: <DeliveryList /> },
+      { path: 'finance/subject', element: <SubjectList /> },
+      { path: 'finance/voucher', element: <VoucherList /> },
+      { path: 'finance/receivable', element: <ReceivableList /> },
+      { path: 'finance/payable', element: <PayableList /> },
     ],
   },
 ]);

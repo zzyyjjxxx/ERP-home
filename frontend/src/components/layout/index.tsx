@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Dropdown, Avatar } from 'antd';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined,
-  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined,
+  SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined, DollarOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useUserStore } from '@/stores/userStore';
@@ -33,6 +33,12 @@ const menuItems: MenuProps['items'] = [
     { key: '/sales/customer', label: '客户管理' },
     { key: '/sales/order', label: '销售订单' },
     { key: '/sales/delivery', label: '销售发货' },
+  ]},
+  { key: '/finance', icon: <DollarOutlined />, label: '财务管理', children: [
+    { key: '/finance/subject', label: '会计科目' },
+    { key: '/finance/voucher', label: '凭证管理' },
+    { key: '/finance/receivable', label: '应收账款' },
+    { key: '/finance/payable', label: '应付账款' },
   ]},
 ];
 
