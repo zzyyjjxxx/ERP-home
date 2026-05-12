@@ -12,6 +12,7 @@ import com.erp.inventory.service.InvStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 
 @Service
@@ -41,10 +42,10 @@ public class InvStockServiceImpl extends ServiceImpl<InvStockMapper, InvStock> i
     @Override
     @Transactional
     public void decreaseStock(Long productId, Long warehouseId, BigDecimal qty, String bizType, String bizNo) {
-        InvStock stock = getStock(productId, warehouseId);
-        BigDecimal available = stock.getQuantity().subtract(stock.getLockedQty());
+        InvStock stock = getOrCreateStock(productId, warehouseId);
+        BigDecimal available = stock.getQuantity().subtract(stock.getLockedQty() != null ? stock.getLockedQty() : BigDecimal.ZERO);
         if (available.compareTo(qty) < 0) {
-            throw new BusinessException("库存不足");
+            throw new BusinessException("库存不足，当前可用库存：" + available);
         }
         BigDecimal before = stock.getQuantity();
         stock.setQuantity(before.subtract(qty));
@@ -53,29 +54,9 @@ public class InvStockServiceImpl extends ServiceImpl<InvStockMapper, InvStock> i
     }
 
     @Override
-    @Transactional
-    public void lockStock(Long productId, Long warehouseId, BigDecimal qty) {
-        InvStock stock = getStock(productId, warehouseId);
-        BigDecimal available = stock.getQuantity().subtract(stock.getLockedQty());
-        if (available.compareTo(qty) < 0) {
-            throw new BusinessException("可锁定库存不足");
-        }
-        stock.setLockedQty(stock.getLockedQty().add(qty));
-        updateById(stock);
-    }
-
-    @Override
-    @Transactional
-    public void unlockStock(Long productId, Long warehouseId, BigDecimal qty) {
-        InvStock stock = getStock(productId, warehouseId);
-        stock.setLockedQty(stock.getLockedQty().subtract(qty));
-        updateById(stock);
-    }
-
-    private InvStock getOrCreateStock(Long productId, Long warehouseId) {
+    public InvStock getOrCreateStock(Long productId, Long warehouseId) {
         LambdaQueryWrapper<InvStock> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(InvStock::getProductId, productId)
-                .eq(InvStock::getWarehouseId, warehouseId);
+        wrapper.eq(InvStock::getProductId, productId).eq(InvStock::getWarehouseId, warehouseId);
         InvStock stock = getOne(wrapper);
         if (stock == null) {
             stock = new InvStock();
@@ -88,15 +69,24 @@ public class InvStockServiceImpl extends ServiceImpl<InvStockMapper, InvStock> i
         return stock;
     }
 
-    private InvStock getStock(Long productId, Long warehouseId) {
-        LambdaQueryWrapper<InvStock> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(InvStock::getProductId, productId)
-                .eq(InvStock::getWarehouseId, warehouseId);
-        InvStock stock = getOne(wrapper);
-        if (stock == null) {
-            throw new BusinessException("库存记录不存在");
+    @Override
+    @Transactional
+    public void lockStock(Long productId, Long warehouseId, BigDecimal qty) {
+        InvStock stock = getOrCreateStock(productId, warehouseId);
+        BigDecimal available = stock.getQuantity().subtract(stock.getLockedQty() != null ? stock.getLockedQty() : BigDecimal.ZERO);
+        if (available.compareTo(qty) < 0) {
+            throw new BusinessException("可锁定库存不足");
         }
-        return stock;
+        stock.setLockedQty(stock.getLockedQty().add(qty));
+        updateById(stock);
+    }
+
+    @Override
+    @Transactional
+    public void unlockStock(Long productId, Long warehouseId, BigDecimal qty) {
+        InvStock stock = getOrCreateStock(productId, warehouseId);
+        stock.setLockedQty(stock.getLockedQty().subtract(qty));
+        updateById(stock);
     }
 
     private void saveFlow(Long productId, Long warehouseId, String bizType, String bizNo,
