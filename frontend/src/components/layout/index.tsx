@@ -29,6 +29,8 @@ const menuItems: MenuProps['items'] = [
     { key: '/inventory/product', label: '商品管理' },
     { key: '/inventory/warehouse', label: '仓库管理' },
     { key: '/inventory/stock', label: '库存查询' },
+    { key: '/inventory/transfer', label: '调拨管理' },
+    { key: '/inventory/check', label: '盘点管理' },
   ]},
   { key: '/sales', icon: <ShopOutlined />, label: '销售管理', children: [
     { key: '/sales/customer', label: '客户管理' },

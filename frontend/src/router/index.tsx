@@ -13,6 +13,8 @@ import PurchaseReturnList from '@/pages/purchase/return';
 import ProductList from '@/pages/inventory/product';
 import WarehouseList from '@/pages/inventory/warehouse';
 import StockPage from '@/pages/inventory/stock';
+import TransferList from '@/pages/inventory/transfer';
+import CheckList from '@/pages/inventory/check';
 import CustomerList from '@/pages/sales/customer';
 import SalesOrderList from '@/pages/sales/order';
 import DeliveryList from '@/pages/sales/delivery';
@@ -44,6 +46,8 @@ const router = createBrowserRouter([
       { path: 'inventory/product', element: <ProductList /> },
       { path: 'inventory/warehouse', element: <WarehouseList /> },
       { path: 'inventory/stock', element: <StockPage /> },
+      { path: 'inventory/transfer', element: <TransferList /> },
+      { path: 'inventory/check', element: <CheckList /> },
       { path: 'sales/customer', element: <CustomerList /> },
       { path: 'sales/order', element: <SalesOrderList /> },
       { path: 'sales/delivery', element: <DeliveryList /> },
