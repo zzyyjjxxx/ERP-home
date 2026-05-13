@@ -18,7 +18,7 @@ public class PrdBomController {
 
     @GetMapping("/list")
     public Result<List<PrdBom>> list() {
-        return Result.ok(bomService.list());
+        return Result.ok(bomService.lambdaQuery().orderByDesc(PrdBom::getCreateTime).list());
     }
 
     @GetMapping("/{id}")

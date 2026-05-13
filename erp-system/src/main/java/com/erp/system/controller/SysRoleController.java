@@ -21,13 +21,13 @@ public class SysRoleController {
     @GetMapping("/list")
     @RequirePermission("system:role:list")
     public Result<List<SysRole>> list() {
-        return Result.ok(roleService.list());
+        return Result.ok(roleService.lambdaQuery().orderByDesc(SysRole::getCreateTime).list());
     }
 
     @PostMapping
     @RequirePermission("system:role:add")
     public Result<?> add(@RequestBody SysRole role) {
-        roleService.save(role);
+        roleService.addRole(role);
         return Result.ok();
     }
 
@@ -35,7 +35,7 @@ public class SysRoleController {
     @RequirePermission("system:role:edit")
     public Result<?> update(@PathVariable Long id, @RequestBody SysRole role) {
         role.setId(id);
-        roleService.updateById(role);
+        roleService.updateRole(role);
         return Result.ok();
     }
 
