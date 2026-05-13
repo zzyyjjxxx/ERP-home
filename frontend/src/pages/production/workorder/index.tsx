@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormSelect, ProFormDigit, ProFormDatePicker, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, Modal, InputNumber, message, Popconfirm, Space } from 'antd';
+import { Button, Tag, Modal, InputNumber, App, Popconfirm, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import {
   getWorkOrderList, addWorkOrder, updateWorkOrder, deleteWorkOrder,
@@ -10,9 +10,12 @@ import {
 import { getAllProducts } from '@/services/inventory';
 
 export default function WorkOrderList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
+
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [completeRecord, setCompleteRecord] = useState<any>(null);
   const [actualQty, setActualQty] = useState(0);
@@ -20,7 +23,7 @@ export default function WorkOrderList() {
   const [bomPreviewOpen, setBomPreviewOpen] = useState(false);
 
   const columns: ProColumns[] = [
-    { title: '工单号', dataIndex: 'orderNo', key: 'orderNo' },
+    { title: '工单号', dataIndex: 'orderNo', key: 'orderNo', sorter: true },
     { title: '产品', dataIndex: 'productName', key: 'productName' },
     { title: '计划数量', dataIndex: 'planQty', key: 'planQty', search: false },
     { title: '实际数量', dataIndex: 'actualQty', key: 'actualQty', search: false },
@@ -58,7 +61,7 @@ export default function WorkOrderList() {
             <Button type="link" onClick={async () => {
               await startWorkOrder(record.id);
               message.success('已开工');
-              actionRef.current?.reload();
+              setTableKey(k => k + 1);
             }}>开工</Button>
           )}
           {record.status === 1 && (
@@ -72,13 +75,13 @@ export default function WorkOrderList() {
             <Button type="link" danger onClick={async () => {
               await closeWorkOrder(record.id);
               message.success('已关闭');
-              actionRef.current?.reload();
+              setTableKey(k => k + 1);
             }}>关闭</Button>
           )}
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deleteWorkOrder(record.id);
             message.success('删除成功');
-            actionRef.current?.reload();
+            setTableKey(k => k + 1);
           }}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
@@ -90,9 +93,16 @@ export default function WorkOrderList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
         request={async (params) => {
-          const data = await getWorkOrderList(params);
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getWorkOrderList(query);
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}
@@ -107,20 +117,27 @@ export default function WorkOrderList() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑工单' : '新增工单'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         width={600}
         onFinish={async (values) => {
-          if (editRecord) {
-            await updateWorkOrder(editRecord.id, values);
-          } else {
-            await addWorkOrder(values);
+          try {
+            if (editRecord) {
+              await updateWorkOrder(editRecord.id, values);
+            } else {
+              await addWorkOrder(values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormSelect
@@ -150,7 +167,8 @@ export default function WorkOrderList() {
                 try {
                   const items: any = await getBomItems(val);
                   setBomPreview(items || []);
-                } catch {
+                } catch (err: any) {
+                  message.error(err?.message || '获取BOM物料失败');
                   setBomPreview([]);
                 }
               } else {
@@ -196,7 +214,7 @@ export default function WorkOrderList() {
           await completeWorkOrder(completeRecord.id, actualQty);
           message.success('已完工');
           setCompleteModalOpen(false);
-          actionRef.current?.reload();
+          setTableKey(k => k + 1);
         }}
       >
         <div style={{ marginBottom: 16 }}>

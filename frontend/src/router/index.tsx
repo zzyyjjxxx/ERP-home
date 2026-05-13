@@ -10,7 +10,9 @@ import SupplierList from '@/pages/purchase/supplier';
 import OrderList from '@/pages/purchase/order';
 import ReceiptList from '@/pages/purchase/receipt';
 import PurchaseReturnList from '@/pages/purchase/return';
+import CategoryList from '@/pages/inventory/category';
 import ProductList from '@/pages/inventory/product';
+import UnitList from '@/pages/inventory/unit';
 import WarehouseList from '@/pages/inventory/warehouse';
 import StockPage from '@/pages/inventory/stock';
 import TransferList from '@/pages/inventory/transfer';
@@ -45,7 +47,9 @@ const router = createBrowserRouter([
       { path: 'purchase/order', element: <OrderList /> },
       { path: 'purchase/receipt', element: <ReceiptList /> },
       { path: 'purchase/return', element: <PurchaseReturnList /> },
+      { path: 'inventory/category', element: <CategoryList /> },
       { path: 'inventory/product', element: <ProductList /> },
+      { path: 'inventory/unit', element: <UnitList /> },
       { path: 'inventory/warehouse', element: <WarehouseList /> },
       { path: 'inventory/stock', element: <StockPage /> },
       { path: 'inventory/transfer', element: <TransferList /> },

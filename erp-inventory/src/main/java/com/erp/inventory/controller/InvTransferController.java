@@ -1,9 +1,12 @@
 package com.erp.inventory.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.OperLog;
 import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory/transfer")
@@ -30,11 +34,17 @@ public class InvTransferController extends BaseController {
     public Result<PageResult<InvTransfer>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Integer status) {
-        Page<InvTransfer> page = transferMapper.selectPage(new Page<>(pageNum, pageSize),
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<InvTransfer>()
-                        .eq(status != null, InvTransfer::getStatus, status)
-                        .orderByDesc(InvTransfer::getCreateTime));
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<InvTransfer, ?>> fieldMap = Map.of(
+            "transferNo", InvTransfer::getTransferNo,
+            "createTime", InvTransfer::getCreateTime
+        );
+        LambdaQueryWrapper<InvTransfer> wrapper = new LambdaQueryWrapper<InvTransfer>()
+                .eq(status != null, InvTransfer::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, InvTransfer::getCreateTime, fieldMap);
+        Page<InvTransfer> page = transferMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 

@@ -7,7 +7,7 @@ import com.erp.sales.entity.SalDeliveryItem;
 import java.util.List;
 
 public interface SalDeliveryService extends IService<SalDelivery> {
-    Page<SalDelivery> pageDeliveries(int pageNum, int pageSize, Integer status);
+    Page<SalDelivery> pageDeliveries(int pageNum, int pageSize, Integer status, String sortField, String sortOrder);
     void createDelivery(SalDelivery delivery, List<SalDeliveryItem> items);
     void auditDelivery(Long id);
     void unauditDelivery(Long id);

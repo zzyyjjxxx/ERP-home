@@ -29,8 +29,10 @@ public class SysUserController extends BaseController {
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long deptId,
-            @RequestParam(required = false) Integer status) {
-        Page<SysUser> page = userService.pageUsers(pageNum, pageSize, keyword, deptId, status);
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Page<SysUser> page = userService.pageUsers(pageNum, pageSize, keyword, deptId, status, sortField, sortOrder);
         return pageResult(page);
     }
 

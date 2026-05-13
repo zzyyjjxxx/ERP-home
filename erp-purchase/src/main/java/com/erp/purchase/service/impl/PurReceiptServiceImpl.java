@@ -1,8 +1,10 @@
 package com.erp.purchase.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.purchase.entity.PurReceipt;
 import com.erp.purchase.entity.PurReceiptItem;
@@ -19,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +31,14 @@ public class PurReceiptServiceImpl extends ServiceImpl<PurReceiptMapper, PurRece
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public Page<PurReceipt> pageReceipts(int pageNum, int pageSize, Integer status) {
+    public Page<PurReceipt> pageReceipts(int pageNum, int pageSize, Integer status, String sortField, String sortOrder) {
+        Map<String, SFunction<PurReceipt, ?>> fieldMap = Map.of(
+            "receiptNo", PurReceipt::getReceiptNo,
+            "createTime", PurReceipt::getCreateTime
+        );
         LambdaQueryWrapper<PurReceipt> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(status != null, PurReceipt::getStatus, status)
-                .orderByDesc(PurReceipt::getCreateTime);
+        wrapper.eq(status != null, PurReceipt::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, PurReceipt::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

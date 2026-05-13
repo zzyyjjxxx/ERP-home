@@ -1,18 +1,20 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormSelect, ProFormDigit, ProFormDatePicker, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, message, Popconfirm, Space } from 'antd';
+import { Button, Tag, App, Popconfirm, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getPlanningList, addPlanning, updatePlanning, deletePlanning, auditPlanning } from '@/services/production';
 import { getAllProducts } from '@/services/inventory';
 
 export default function PlanningList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
-    { title: '计划号', dataIndex: 'planNo', key: 'planNo' },
+    { title: '计划号', dataIndex: 'planNo', key: 'planNo', sorter: true },
     { title: '产品', dataIndex: 'productName', key: 'productName' },
     { title: '计划数量', dataIndex: 'planQty', key: 'planQty', search: false },
     { title: '开始日期', dataIndex: 'startDate', key: 'startDate', search: false, valueType: 'date' },
@@ -37,7 +39,7 @@ export default function PlanningList() {
       },
     },
     { title: '备注', dataIndex: 'remark', key: 'remark', search: false, ellipsis: true },
-    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', search: false, valueType: 'dateTime' },
+    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', search: false, valueType: 'dateTime', sorter: true, defaultSortOrder: 'descend' as const },
     {
       title: '操作', key: 'action', search: false, fixed: 'right',
       render: (_, record) => (
@@ -51,14 +53,14 @@ export default function PlanningList() {
               <Button type="link" onClick={async () => {
                 await auditPlanning(record.id);
                 message.success('审核成功');
-                actionRef.current?.reload();
+                setTableKey(k => k + 1);
               }}>审核</Button>
             </>
           )}
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deletePlanning(record.id);
             message.success('删除成功');
-            actionRef.current?.reload();
+            setTableKey(k => k + 1);
           }}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
@@ -70,9 +72,16 @@ export default function PlanningList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
         request={async (params) => {
-          const data = await getPlanningList(params);
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getPlanningList(query);
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}
@@ -86,20 +95,27 @@ export default function PlanningList() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑计划' : '新增计划'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         width={500}
         onFinish={async (values) => {
-          if (editRecord) {
-            await updatePlanning(editRecord.id, values);
-          } else {
-            await addPlanning(values);
+          try {
+            if (editRecord) {
+              await updatePlanning(editRecord.id, values);
+            } else {
+              await addPlanning(values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormSelect

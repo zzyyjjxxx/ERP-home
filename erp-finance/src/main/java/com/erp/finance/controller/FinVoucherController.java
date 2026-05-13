@@ -23,8 +23,10 @@ public class FinVoucherController extends BaseController {
     public Result<PageResult<FinVoucher>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Integer status) {
-        return pageResult(voucherService.pageVouchers(pageNum, pageSize, status));
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        return pageResult(voucherService.pageVouchers(pageNum, pageSize, status, sortField, sortOrder));
     }
 
     @GetMapping("/{id}")

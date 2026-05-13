@@ -7,7 +7,7 @@ import com.erp.finance.entity.FinVoucherItem;
 import java.util.List;
 
 public interface FinVoucherService extends IService<FinVoucher> {
-    Page<FinVoucher> pageVouchers(int pageNum, int pageSize, Integer status);
+    Page<FinVoucher> pageVouchers(int pageNum, int pageSize, Integer status, String sortField, String sortOrder);
     void createVoucher(FinVoucher voucher, List<FinVoucherItem> items);
     void auditVoucher(Long id);
     void unauditVoucher(Long id);

@@ -1,9 +1,12 @@
 package com.erp.inventory.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.OperLog;
 import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.inventory.entity.InvUnit;
@@ -12,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory/unit")
@@ -25,12 +29,19 @@ public class InvUnitController extends BaseController {
     public Result<PageResult<InvUnit>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) String keyword) {
-        Page<InvUnit> page = unitMapper.selectPage(new Page<>(pageNum, pageSize),
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<InvUnit>()
-                        .like(keyword != null, InvUnit::getName, keyword)
-                        .or().like(keyword != null, InvUnit::getCode, keyword)
-                        .orderByDesc(InvUnit::getCreateTime));
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<InvUnit, ?>> fieldMap = Map.of(
+            "code", InvUnit::getCode,
+            "name", InvUnit::getName,
+            "createTime", InvUnit::getCreateTime
+        );
+        LambdaQueryWrapper<InvUnit> wrapper = new LambdaQueryWrapper<InvUnit>()
+                .like(keyword != null, InvUnit::getName, keyword)
+                .or().like(keyword != null, InvUnit::getCode, keyword);
+        SortHelper.applySort(wrapper, sortField, sortOrder, InvUnit::getCreateTime, fieldMap);
+        Page<InvUnit> page = unitMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 

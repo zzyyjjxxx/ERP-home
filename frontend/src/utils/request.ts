@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { message } from 'antd';
+import { showError } from './message';
 
 const instance = axios.create({
   baseURL: '/api',
@@ -23,16 +23,16 @@ instance.interceptors.response.use(
       window.location.href = '/login';
       return Promise.reject(new Error(msg));
     }
-    message.error(msg || '请求失败');
-    return Promise.reject(new Error(msg));
+    return Promise.reject(new Error(msg || '请求失败'));
   },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.clear();
       window.location.href = '/login';
     }
-    message.error('网络异常');
-    return Promise.reject(error);
+    const msg = error.response?.data?.message || '网络异常';
+    showError(msg);
+    return Promise.reject(new Error(msg));
   }
 );
 

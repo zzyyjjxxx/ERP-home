@@ -1,9 +1,12 @@
 package com.erp.inventory.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.OperLog;
 import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory/check")
@@ -31,12 +35,18 @@ public class InvCheckController extends BaseController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Long warehouseId,
-            @RequestParam(required = false) Integer status) {
-        Page<InvCheck> page = checkMapper.selectPage(new Page<>(pageNum, pageSize),
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<InvCheck>()
-                        .eq(warehouseId != null, InvCheck::getWarehouseId, warehouseId)
-                        .eq(status != null, InvCheck::getStatus, status)
-                        .orderByDesc(InvCheck::getCreateTime));
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<InvCheck, ?>> fieldMap = Map.of(
+            "checkNo", InvCheck::getCheckNo,
+            "createTime", InvCheck::getCreateTime
+        );
+        LambdaQueryWrapper<InvCheck> wrapper = new LambdaQueryWrapper<InvCheck>()
+                .eq(warehouseId != null, InvCheck::getWarehouseId, warehouseId)
+                .eq(status != null, InvCheck::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, InvCheck::getCreateTime, fieldMap);
+        Page<InvCheck> page = checkMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 

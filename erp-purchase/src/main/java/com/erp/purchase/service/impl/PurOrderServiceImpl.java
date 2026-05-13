@@ -1,8 +1,10 @@
 package com.erp.purchase.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.purchase.entity.PurOrder;
 import com.erp.purchase.entity.PurOrderItem;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +37,15 @@ public class PurOrderServiceImpl extends ServiceImpl<PurOrderMapper, PurOrder> i
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public Page<PurOrder> pageOrders(int pageNum, int pageSize, Integer status, Long supplierId) {
+    public Page<PurOrder> pageOrders(int pageNum, int pageSize, Integer status, Long supplierId, String sortField, String sortOrder) {
+        Map<String, SFunction<PurOrder, ?>> fieldMap = Map.of(
+            "orderNo", PurOrder::getOrderNo,
+            "createTime", PurOrder::getCreateTime
+        );
         LambdaQueryWrapper<PurOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(status != null, PurOrder::getStatus, status)
-                .eq(supplierId != null, PurOrder::getSupplierId, supplierId)
-                .orderByDesc(PurOrder::getCreateTime);
+                .eq(supplierId != null, PurOrder::getSupplierId, supplierId);
+        SortHelper.applySort(wrapper, sortField, sortOrder, PurOrder::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

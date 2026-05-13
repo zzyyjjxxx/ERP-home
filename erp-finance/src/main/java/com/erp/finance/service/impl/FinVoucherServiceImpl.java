@@ -1,8 +1,10 @@
 package com.erp.finance.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.finance.entity.FinVoucher;
 import com.erp.finance.entity.FinVoucherItem;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +28,15 @@ public class FinVoucherServiceImpl extends ServiceImpl<FinVoucherMapper, FinVouc
     private final FinVoucherItemMapper voucherItemMapper;
 
     @Override
-    public Page<FinVoucher> pageVouchers(int pageNum, int pageSize, Integer status) {
+    public Page<FinVoucher> pageVouchers(int pageNum, int pageSize, Integer status, String sortField, String sortOrder) {
+        Map<String, SFunction<FinVoucher, ?>> fieldMap = Map.of(
+            "voucherNo", FinVoucher::getVoucherNo,
+            "createTime", FinVoucher::getCreateTime,
+            "voucherDate", FinVoucher::getVoucherDate
+        );
         LambdaQueryWrapper<FinVoucher> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(status != null, FinVoucher::getStatus, status)
-                .orderByDesc(FinVoucher::getCreateTime);
+        wrapper.eq(status != null, FinVoucher::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, FinVoucher::getVoucherDate, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

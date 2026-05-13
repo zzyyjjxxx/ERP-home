@@ -1,8 +1,10 @@
 package com.erp.production.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.production.entity.PrdQc;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/production/qc")
@@ -24,11 +27,17 @@ public class PrdQcController extends BaseController {
     public Result<PageResult<PrdQc>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Long workOrderId) {
-        Page<PrdQc> page = qcMapper.selectPage(new Page<>(pageNum, pageSize),
-                new LambdaQueryWrapper<PrdQc>()
-                        .eq(workOrderId != null, PrdQc::getWorkOrderId, workOrderId)
-                        .orderByDesc(PrdQc::getCreateTime));
+            @RequestParam(required = false) Long workOrderId,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<PrdQc, ?>> fieldMap = Map.of(
+            "qcNo", PrdQc::getQcNo,
+            "createTime", PrdQc::getCreateTime
+        );
+        LambdaQueryWrapper<PrdQc> wrapper = new LambdaQueryWrapper<PrdQc>()
+                .eq(workOrderId != null, PrdQc::getWorkOrderId, workOrderId);
+        SortHelper.applySort(wrapper, sortField, sortOrder, PrdQc::getCreateTime, fieldMap);
+        Page<PrdQc> page = qcMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 

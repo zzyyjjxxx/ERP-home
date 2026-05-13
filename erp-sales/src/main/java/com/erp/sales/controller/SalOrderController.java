@@ -28,8 +28,10 @@ public class SalOrderController extends BaseController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) Long customerId) {
-        Page<SalOrder> page = orderService.pageOrders(pageNum, pageSize, status, customerId);
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Page<SalOrder> page = orderService.pageOrders(pageNum, pageSize, status, customerId, sortField, sortOrder);
         return pageResult(page);
     }
 

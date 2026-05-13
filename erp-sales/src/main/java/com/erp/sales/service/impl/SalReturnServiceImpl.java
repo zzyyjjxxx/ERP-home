@@ -1,8 +1,10 @@
 package com.erp.sales.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.sales.entity.SalReturn;
 import com.erp.sales.entity.SalReturnItem;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,10 +30,14 @@ public class SalReturnServiceImpl extends ServiceImpl<SalReturnMapper, SalReturn
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public Page<SalReturn> pageReturns(int pageNum, int pageSize, Integer status) {
+    public Page<SalReturn> pageReturns(int pageNum, int pageSize, Integer status, String sortField, String sortOrder) {
+        Map<String, SFunction<SalReturn, ?>> fieldMap = Map.of(
+            "returnNo", SalReturn::getReturnNo,
+            "createTime", SalReturn::getCreateTime
+        );
         LambdaQueryWrapper<SalReturn> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(status != null, SalReturn::getStatus, status)
-                .orderByDesc(SalReturn::getCreateTime);
+        wrapper.eq(status != null, SalReturn::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, SalReturn::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

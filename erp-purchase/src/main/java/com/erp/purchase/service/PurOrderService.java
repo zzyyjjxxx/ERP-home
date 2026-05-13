@@ -8,7 +8,7 @@ import com.erp.purchase.entity.PurReceipt;
 import java.util.List;
 
 public interface PurOrderService extends IService<PurOrder> {
-    Page<PurOrder> pageOrders(int pageNum, int pageSize, Integer status, Long supplierId);
+    Page<PurOrder> pageOrders(int pageNum, int pageSize, Integer status, Long supplierId, String sortField, String sortOrder);
     void createOrder(PurOrder order, List<PurOrderItem> items);
     void auditOrder(Long id);
     void unauditOrder(Long id);

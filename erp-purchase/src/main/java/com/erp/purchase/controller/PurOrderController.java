@@ -28,8 +28,10 @@ public class PurOrderController extends BaseController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) Long supplierId) {
-        Page<PurOrder> page = orderService.pageOrders(pageNum, pageSize, status, supplierId);
+            @RequestParam(required = false) Long supplierId,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Page<PurOrder> page = orderService.pageOrders(pageNum, pageSize, status, supplierId, sortField, sortOrder);
         return pageResult(page);
     }
 

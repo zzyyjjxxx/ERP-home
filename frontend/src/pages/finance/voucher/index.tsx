@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, message, Popconfirm, Modal, Form, DatePicker, Select, Input, InputNumber, TreeSelect, Space, Table, Typography } from 'antd';
+import { Button, Tag, App, Popconfirm, Modal, Form, DatePicker, Select, Input, InputNumber, TreeSelect, Space, Table, Typography } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -26,9 +26,12 @@ const STATUS_MAP: Record<number, { text: string; color: string }> = {
 };
 
 export default function VoucherList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [tableKey, setTableKey] = useState(0);
+
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [form] = Form.useForm();
   const [items, setItems] = useState<VoucherItem[]>([]);
@@ -77,7 +80,8 @@ export default function VoucherList() {
       } else {
         setItems([createEmptyItem()]);
       }
-    } catch {
+    } catch (err: any) {
+      message.error(err?.message || '获取凭证详情失败');
       setItems([createEmptyItem()]);
     }
     setModalOpen(true);
@@ -151,7 +155,7 @@ export default function VoucherList() {
           message.success('新增成功');
         }
         setModalOpen(false);
-        actionRef.current?.reload();
+        setTableKey(k => k + 1);
       } finally {
         setConfirmLoading(false);
       }
@@ -163,11 +167,11 @@ export default function VoucherList() {
   const handleAudit = async (id: number) => {
     await auditVoucher(id);
     message.success('审核成功');
-    actionRef.current?.reload();
+    setTableKey(k => k + 1);
   };
 
   const columns: ProColumns[] = [
-    { title: '凭证号', dataIndex: 'voucherNo', key: 'voucherNo', width: 120 },
+    { title: '凭证号', dataIndex: 'voucherNo', key: 'voucherNo', width: 120, sorter: true },
     {
       title: '日期', dataIndex: 'voucherDate', key: 'voucherDate',
       search: false, valueType: 'date', width: 120,
@@ -209,11 +213,11 @@ export default function VoucherList() {
               <Button type="link" size="small" onClick={() => handleAudit(record.id)}>审核</Button>
             </>
           )}
-          {record.status === 1 && <Button type="link" size="small" onClick={async () => { await unauditVoucher(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</Button>}
+          {record.status === 1 && <Button type="link" size="small" onClick={async () => { await unauditVoucher(record.id); message.success('反审核成功'); setTableKey(k => k + 1); }}>反审核</Button>}
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deleteVoucher(record.id);
             message.success('删除成功');
-            actionRef.current?.reload();
+            setTableKey(k => k + 1);
           }}>
             <Button type="link" size="small" danger>删除</Button>
           </Popconfirm>
@@ -308,9 +312,16 @@ export default function VoucherList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
         request={async (params) => {
-          const data = await getVoucherList(params);
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getVoucherList(query);
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}

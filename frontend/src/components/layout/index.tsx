@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Dropdown, Avatar } from 'antd';
+import { Layout, Menu, Button, Dropdown, Avatar, Spin } from 'antd';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined,
   SettingOutlined, ShoppingOutlined, InboxOutlined, ShopOutlined, DollarOutlined, ToolOutlined, HomeOutlined,
@@ -27,6 +27,8 @@ const menuItems: MenuProps['items'] = [
   ]},
   { key: '/inventory', icon: <InboxOutlined />, label: '库存管理', children: [
     { key: '/inventory/product', label: '商品管理' },
+    { key: '/inventory/category', label: '商品分类' },
+    { key: '/inventory/unit', label: '计量单位' },
     { key: '/inventory/warehouse', label: '仓库管理' },
     { key: '/inventory/stock', label: '库存查询' },
     { key: '/inventory/transfer', label: '调拨管理' },
@@ -55,13 +57,16 @@ const menuItems: MenuProps['items'] = [
 
 export default function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, setUser, logout } = useUserStore();
 
   useEffect(() => {
     if (!user) {
-      getUserInfo().then(setUser).catch(() => navigate('/login'));
+      getUserInfo().then((u) => { setUser(u); setLoading(false); }).catch(() => navigate('/login'));
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -99,7 +104,7 @@ export default function MainLayout() {
           </Dropdown>
         </Header>
         <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 8, minHeight: 280 }}>
-          <Outlet />
+          {loading ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 280 }}><Spin size="large" /></div> : <Outlet />}
         </Content>
       </Layout>
     </Layout>

@@ -7,7 +7,7 @@ import com.erp.system.entity.SysUser;
 import java.util.List;
 
 public interface SysUserService extends IService<SysUser> {
-    Page<SysUser> pageUsers(int pageNum, int pageSize, String keyword, Long deptId, Integer status);
+    Page<SysUser> pageUsers(int pageNum, int pageSize, String keyword, Long deptId, Integer status, String sortField, String sortOrder);
     SysUser getByUsername(String username);
     void addUser(SysUser user);
     void updateUser(SysUser user);

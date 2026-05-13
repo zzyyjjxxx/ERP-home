@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText, ProFormSelect, ProFormDigit } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, Table, InputNumber, message, Popconfirm, Space } from 'antd';
+import { Button, Tag, Table, InputNumber, App, Popconfirm, Space } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getBomList, addBom, updateBom, deleteBom, enableBom, disableBom } from '@/services/production';
 import { getAllProducts } from '@/services/inventory';
@@ -15,10 +15,12 @@ interface BomItem {
 }
 
 export default function BomList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
   const [items, setItems] = useState<BomItem[]>([]);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
     {
@@ -35,7 +37,7 @@ export default function BomList() {
       ),
     },
     { title: '创建人', dataIndex: 'creator', key: 'creator', search: false },
-    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', search: false, valueType: 'dateTime' },
+    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', search: false, valueType: 'dateTime', sorter: true, defaultSortOrder: 'descend' as const },
     {
       title: '操作', key: 'action', search: false, fixed: 'right',
       render: (_, record) => (
@@ -46,11 +48,11 @@ export default function BomList() {
             setModalOpen(true);
           }}>编辑</Button>
           {record.status === 0 ? (
-            <Button type="link" onClick={async () => { await enableBom(record.id); message.success('已启用'); actionRef.current?.reload(); }}>启用</Button>
+            <Button type="link" onClick={async () => { await enableBom(record.id); message.success('已启用'); setTableKey(k => k + 1); }}>启用</Button>
           ) : (
-            <Button type="link" onClick={async () => { await disableBom(record.id); message.success('已禁用'); actionRef.current?.reload(); }}>禁用</Button>
+            <Button type="link" onClick={async () => { await disableBom(record.id); message.success('已禁用'); setTableKey(k => k + 1); }}>禁用</Button>
           )}
-          <Popconfirm title="确定删除?" onConfirm={async () => { await deleteBom(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>
+          <Popconfirm title="确定删除?" onConfirm={async () => { await deleteBom(record.id); message.success('删除成功'); setTableKey(k => k + 1); }}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
         </Space>
@@ -129,9 +131,16 @@ export default function BomList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
         request={async (params) => {
-          const data = await getBomList(params);
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getBomList(query);
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}
@@ -146,32 +155,39 @@ export default function BomList() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑BOM' : '新增BOM'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         width={800}
         onFinish={async (values) => {
-          if (items.length === 0 && !editRecord) {
-            message.error('请添加BOM物料明细');
+          try {
+            if (items.length === 0 && !editRecord) {
+              message.error('请添加BOM物料明细');
+              return false;
+            }
+            const payload = {
+              ...values,
+              items: items.map((item) => ({
+                materialId: item.materialId,
+                quantity: item.quantity,
+                unit: item.unit,
+              })),
+            };
+            if (editRecord) {
+              await updateBom(editRecord.id, payload);
+            } else {
+              await addBom(payload);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
             return false;
           }
-          const payload = {
-            ...values,
-            items: items.map((item) => ({
-              materialId: item.materialId,
-              quantity: item.quantity,
-              unit: item.unit,
-            })),
-          };
-          if (editRecord) {
-            await updateBom(editRecord.id, payload);
-          } else {
-            await addBom(payload);
-          }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormSelect

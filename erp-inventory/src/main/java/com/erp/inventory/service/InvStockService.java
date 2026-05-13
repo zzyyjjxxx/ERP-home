@@ -6,7 +6,7 @@ import com.erp.inventory.entity.InvStock;
 import java.math.BigDecimal;
 
 public interface InvStockService extends IService<InvStock> {
-    Page<InvStock> pageStock(int pageNum, int pageSize, Long warehouseId, Long categoryId);
+    Page<InvStock> pageStock(int pageNum, int pageSize, Long warehouseId, Long categoryId, String sortField, String sortOrder);
     void increaseStock(Long productId, Long warehouseId, BigDecimal qty, String bizType, String bizNo);
     void decreaseStock(Long productId, Long warehouseId, BigDecimal qty, String bizType, String bizNo);
     InvStock getOrCreateStock(Long productId, Long warehouseId);

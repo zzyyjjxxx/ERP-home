@@ -1,14 +1,16 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import request from '@/utils/request';
 
 function DictDataList({ dictTypeId }: { dictTypeId: number }) {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
     { title: '标签', dataIndex: 'dictLabel', key: 'dictLabel' },
@@ -22,7 +24,7 @@ function DictDataList({ dictTypeId }: { dictTypeId: number }) {
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await request.delete(`/system/dict-data/${record.id}`);
             message.success('删除成功');
-            actionRef.current?.reload();
+            setTableKey(k => k + 1);
           }}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
@@ -34,9 +36,16 @@ function DictDataList({ dictTypeId }: { dictTypeId: number }) {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
         request={async (params) => {
-          const data: any = await request.get('/system/dict-data/list', { params: { ...params, dictTypeId } });
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest, dictTypeId };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data: any = await request.get('/system/dict-data/list', { params: query });
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}
@@ -47,19 +56,26 @@ function DictDataList({ dictTypeId }: { dictTypeId: number }) {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑字典项' : '新增字典项'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={{ ...editRecord, dictTypeId }}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (values) => {
-          if (editRecord) {
-            await request.put(`/system/dict-data/${editRecord.id}`, values);
-          } else {
-            await request.post('/system/dict-data', values);
+          try {
+            if (editRecord) {
+              await request.put(`/system/dict-data/${editRecord.id}`, values);
+            } else {
+              await request.post('/system/dict-data', values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormText name="dictTypeId" label="字典类型ID" hidden />
@@ -73,14 +89,17 @@ function DictDataList({ dictTypeId }: { dictTypeId: number }) {
 }
 
 export default function DictManage() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
+
   const [, setActiveTab] = useState<number>();
 
   const columns: ProColumns[] = [
-    { title: '编码', dataIndex: 'dictCode', key: 'dictCode' },
-    { title: '名称', dataIndex: 'dictName', key: 'dictName' },
+    { title: '编码', dataIndex: 'dictCode', key: 'dictCode', sorter: true },
+    { title: '名称', dataIndex: 'dictName', key: 'dictName', sorter: true },
     {
       title: '操作', key: 'action', search: false,
       render: (_, record) => (
@@ -89,7 +108,7 @@ export default function DictManage() {
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await request.delete(`/system/dict-type/${record.id}`);
             message.success('删除成功');
-            actionRef.current?.reload();
+            setTableKey(k => k + 1);
           }}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
@@ -101,9 +120,16 @@ export default function DictManage() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
-        request={async () => {
-          const data: any = await request.get('/system/dict-type/list');
+        request={async (params) => {
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data: any = await request.get('/system/dict-type/list', { params: query });
           return { data, total: data?.length || 0, success: true };
         }}
         actionRef={actionRef}
@@ -120,19 +146,26 @@ export default function DictManage() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑字典类型' : '新增字典类型'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (values) => {
-          if (editRecord) {
-            await request.put(`/system/dict-type/${editRecord.id}`, values);
-          } else {
-            await request.post('/system/dict-type', values);
+          try {
+            if (editRecord) {
+              await request.put(`/system/dict-type/${editRecord.id}`, values);
+            } else {
+              await request.post('/system/dict-type', values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormText name="dictCode" label="编码" rules={[{ required: true }]} />

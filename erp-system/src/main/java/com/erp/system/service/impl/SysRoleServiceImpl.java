@@ -2,6 +2,7 @@ package com.erp.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.exception.BusinessException;
 import com.erp.system.entity.SysRole;
 import com.erp.system.entity.SysRoleMenu;
 import com.erp.system.mapper.SysRoleMapper;
@@ -20,6 +21,22 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     public SysRoleServiceImpl(SysRoleMenuMapper roleMenuMapper) {
         this.roleMenuMapper = roleMenuMapper;
+    }
+
+    @Override
+    public void addRole(SysRole role) {
+        if (lambdaQuery().eq(SysRole::getRoleCode, role.getRoleCode()).count() > 0) {
+            throw new BusinessException("角色编码已存在");
+        }
+        save(role);
+    }
+
+    @Override
+    public void updateRole(SysRole role) {
+        if (lambdaQuery().eq(SysRole::getRoleCode, role.getRoleCode()).ne(SysRole::getId, role.getId()).count() > 0) {
+            throw new BusinessException("角色编码已存在");
+        }
+        updateById(role);
     }
 
     @Override

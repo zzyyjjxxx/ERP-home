@@ -1,8 +1,10 @@
 package com.erp.production.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.production.entity.PrdBomItem;
 import com.erp.production.entity.PrdWorkOrder;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +33,14 @@ public class PrdWorkOrderServiceImpl extends ServiceImpl<PrdWorkOrderMapper, Prd
     private final PrdBomItemMapper bomItemMapper;
 
     @Override
-    public Page<PrdWorkOrder> pageOrders(int pageNum, int pageSize, Integer status) {
+    public Page<PrdWorkOrder> pageOrders(int pageNum, int pageSize, Integer status, String sortField, String sortOrder) {
+        Map<String, SFunction<PrdWorkOrder, ?>> fieldMap = Map.of(
+            "orderNo", PrdWorkOrder::getOrderNo,
+            "createTime", PrdWorkOrder::getCreateTime
+        );
         LambdaQueryWrapper<PrdWorkOrder> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(status != null, PrdWorkOrder::getStatus, status)
-                .orderByDesc(PrdWorkOrder::getCreateTime);
+        wrapper.eq(status != null, PrdWorkOrder::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, PrdWorkOrder::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

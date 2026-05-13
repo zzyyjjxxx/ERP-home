@@ -26,8 +26,10 @@ public class PurReceiptController extends BaseController {
     public Result<PageResult<PurReceipt>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Integer status) {
-        Page<PurReceipt> page = receiptService.pageReceipts(pageNum, pageSize, status);
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Page<PurReceipt> page = receiptService.pageReceipts(pageNum, pageSize, status, sortField, sortOrder);
         return pageResult(page);
     }
 

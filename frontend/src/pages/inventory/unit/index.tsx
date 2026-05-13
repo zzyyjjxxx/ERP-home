@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
-import { ProTable, ModalForm, ProFormText, ProFormSelect } from '@ant-design/pro-components';
+import { ProTable, ModalForm, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Tag, App, Popconfirm } from 'antd';
+import { App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { getUserList, addUser, updateUser, deleteUser } from '@/services/system';
+import { getUnitList, addUnit, updateUnit, deleteUnit } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
-export default function UserList() {
+export default function UnitList() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
@@ -14,31 +14,20 @@ export default function UserList() {
   const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
-    { title: '用户名', dataIndex: 'username', key: 'username' },
-    { title: '姓名', dataIndex: 'realName', key: 'realName' },
-    { title: '手机号', dataIndex: 'phone', key: 'phone', search: false },
-    { title: '邮箱', dataIndex: 'email', key: 'email', search: false },
-    {
-      title: '状态', dataIndex: 'status', key: 'status',
-      valueEnum: { 0: { text: '禁用', status: 'Error' }, 1: { text: '正常', status: 'Success' } },
-      render: (_, record) => (
-        <Tag color={record.status === 1 ? 'green' : 'red'}>
-          {record.status === 1 ? '正常' : '禁用'}
-        </Tag>
-      ),
-    },
+    { title: '编码', dataIndex: 'code', key: 'code', sorter: true },
+    { title: '名称', dataIndex: 'name', key: 'name', sorter: true },
     { title: '创建时间', dataIndex: 'createTime', key: 'createTime', search: false, valueType: 'dateTime', sorter: true, defaultSortOrder: 'descend' as const },
     {
       title: '操作', key: 'action', search: false, fixed: 'right',
       render: (_, record) => (
         <>
-          <PermissionBtn permission="system:user:edit" type="link" onClick={() => {
+          <PermissionBtn permission="inventory:unit:edit" type="link" onClick={() => {
             setEditRecord(record);
             setModalOpen(true);
           }}>编辑</PermissionBtn>
-          <PermissionBtn permission="system:user:delete" type="link" danger>
+          <PermissionBtn permission="inventory:unit:delete" type="link" danger>
             <Popconfirm title="确定删除?" onConfirm={async () => {
-              await deleteUser(record.id);
+              await deleteUnit(record.id);
               message.success('删除成功');
               setTableKey(k => k + 1);
             }}>
@@ -56,30 +45,31 @@ export default function UserList() {
         key={tableKey}
         columns={columns}
         request={async (params) => {
-          const { sorter, ...rest } = params;
-          const query: any = { ...rest };
+          const { current, pageSize, sorter, ...search } = params;
+          const keyword = search.name || search.code || undefined;
+          const query: any = { pageNum: current, pageSize, keyword };
           if (sorter?.field) {
             query.sortField = sorter.field;
             query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
           }
-          const data = await getUserList(query);
-          return { data: data.records, total: data.total, success: true };
+          const data = await getUnitList(query);
+          return { data: data.records || data, total: data.total || 0, success: true };
         }}
         actionRef={actionRef}
         rowKey="id"
         search={{ labelWidth: 'auto' }}
         toolBarRender={() => [
-          <PermissionBtn key="add" permission="system:user:add" type="primary" icon={<PlusOutlined />} onClick={() => {
+          <PermissionBtn key="add" permission="inventory:unit:add" type="primary" icon={<PlusOutlined />} onClick={() => {
             setEditRecord(null);
             setModalOpen(true);
           }}>
-            新增用户
+            新增单位
           </PermissionBtn>,
         ]}
       />
       <ModalForm
         key={editRecord?.id || 'add'}
-        title={editRecord ? '编辑用户' : '新增用户'}
+        title={editRecord ? '编辑单位' : '新增单位'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
@@ -87,9 +77,9 @@ export default function UserList() {
         onFinish={async (values) => {
           try {
             if (editRecord) {
-              await updateUser(editRecord.id, values);
+              await updateUnit(editRecord.id, values);
             } else {
-              await addUser(values);
+              await addUnit(values);
             }
             message.success(editRecord ? '修改成功' : '新增成功');
             setTableKey(k => k + 1);
@@ -100,15 +90,8 @@ export default function UserList() {
           }
         }}
       >
-        <ProFormText name="username" label="用户名" rules={[{ required: true }]} />
-        <ProFormText name="password" label="密码" rules={editRecord ? [] : [{ required: true }]} />
-        <ProFormText name="realName" label="姓名" />
-        <ProFormText name="phone" label="手机号" />
-        <ProFormText name="email" label="邮箱" />
-        <ProFormSelect name="status" label="状态" options={[
-          { label: '正常', value: 1 },
-          { label: '禁用', value: 0 },
-        ]} />
+        <ProFormText name="code" label="编码" rules={[{ required: true }]} />
+        <ProFormText name="name" label="名称" rules={[{ required: true }]} />
       </ModalForm>
     </>
   );

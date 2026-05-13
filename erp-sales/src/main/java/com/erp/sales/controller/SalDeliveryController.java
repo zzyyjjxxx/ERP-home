@@ -26,8 +26,10 @@ public class SalDeliveryController extends BaseController {
     public Result<PageResult<SalDelivery>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Integer status) {
-        Page<SalDelivery> page = deliveryService.pageDeliveries(pageNum, pageSize, status);
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Page<SalDelivery> page = deliveryService.pageDeliveries(pageNum, pageSize, status, sortField, sortOrder);
         return pageResult(page);
     }
 

@@ -1,16 +1,23 @@
 package com.erp.system.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.RequirePermission;
+import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
+import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.system.entity.SysRole;
 import com.erp.system.service.SysRoleService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/system/role")
-public class SysRoleController {
+public class SysRoleController extends BaseController {
 
     private final SysRoleService roleService;
 
@@ -20,8 +27,23 @@ public class SysRoleController {
 
     @GetMapping("/list")
     @RequirePermission("system:role:list")
-    public Result<List<SysRole>> list() {
-        return Result.ok(roleService.lambdaQuery().orderByDesc(SysRole::getCreateTime).list());
+    public Result<PageResult<SysRole>> list(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<SysRole, ?>> fieldMap = Map.of(
+            "roleCode", SysRole::getRoleCode,
+            "roleName", SysRole::getRoleName,
+            "createTime", SysRole::getCreateTime
+        );
+        LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<SysRole>()
+                .like(keyword != null, SysRole::getRoleName, keyword)
+                .or().like(keyword != null, SysRole::getRoleCode, keyword);
+        SortHelper.applySort(wrapper, sortField, sortOrder, SysRole::getCreateTime, fieldMap);
+        Page<SysRole> page = roleService.page(new Page<>(pageNum, pageSize), wrapper);
+        return pageResult(page);
     }
 
     @PostMapping

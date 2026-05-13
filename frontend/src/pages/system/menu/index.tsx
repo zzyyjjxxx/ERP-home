@@ -1,17 +1,19 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText, ProFormSelect, ProFormDigit } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getMenuTree, addMenu, updateMenu, deleteMenu } from '@/services/system';
 
 export default function MenuList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
-    { title: '名称', dataIndex: 'menuName', key: 'menuName' },
+    { title: '名称', dataIndex: 'menuName', key: 'menuName', sorter: true },
     {
       title: '类型', dataIndex: 'menuType', key: 'menuType',
       valueEnum: { M: '目录', C: '菜单', B: '按钮' },
@@ -30,7 +32,7 @@ export default function MenuList() {
           <Popconfirm title="确定删除?" onConfirm={async () => {
             await deleteMenu(record.id);
             message.success('删除成功');
-            actionRef.current?.reload();
+            setTableKey(k => k + 1);
           }}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
@@ -42,9 +44,16 @@ export default function MenuList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
-        request={async () => {
-          const data = await getMenuTree();
+        request={async (params) => {
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getMenuTree(query);
           return { data, total: data?.length || 0, success: true };
         }}
         actionRef={actionRef}
@@ -59,19 +68,26 @@ export default function MenuList() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑菜单' : '新增菜单'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (values) => {
-          if (editRecord) {
-            await updateMenu(editRecord.id, values);
-          } else {
-            await addMenu(values);
+          try {
+            if (editRecord) {
+              await updateMenu(editRecord.id, values);
+            } else {
+              await addMenu(values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormSelect name="menuType" label="类型" rules={[{ required: true }]} options={[

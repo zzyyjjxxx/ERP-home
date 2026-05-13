@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Table, Button, Tag, Space, message, Popconfirm, Modal, Form, Input, Select, InputNumber } from 'antd';
+import { Table, Button, Tag, Space, App, Popconfirm, Modal, Form, Input, Select, InputNumber } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getSubjectTree, addSubject, updateSubject, deleteSubject } from '@/services/finance';
@@ -22,6 +22,7 @@ const SUBJECT_TYPE_MAP: Record<string, { text: string; color: string }> = {
 };
 
 export default function SubjectList() {
+  const { message } = App.useApp();
   const [data, setData] = useState<SubjectRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);

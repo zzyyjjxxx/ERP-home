@@ -1,8 +1,10 @@
 package com.erp.purchase.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.purchase.entity.PurReturn;
 import com.erp.purchase.entity.PurReturnItem;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,10 +30,14 @@ public class PurReturnServiceImpl extends ServiceImpl<PurReturnMapper, PurReturn
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public Page<PurReturn> pageReturns(int pageNum, int pageSize, Integer status) {
+    public Page<PurReturn> pageReturns(int pageNum, int pageSize, Integer status, String sortField, String sortOrder) {
+        Map<String, SFunction<PurReturn, ?>> fieldMap = Map.of(
+            "returnNo", PurReturn::getReturnNo,
+            "createTime", PurReturn::getCreateTime
+        );
         LambdaQueryWrapper<PurReturn> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(status != null, PurReturn::getStatus, status)
-                .orderByDesc(PurReturn::getCreateTime);
+        wrapper.eq(status != null, PurReturn::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, PurReturn::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

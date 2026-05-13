@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText, ProFormDigit, ProFormDatePicker } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Tag, Space, message, Popconfirm } from 'antd';
+import { Tag, Space, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getPayableList, addPayable, updatePayable, deletePayable, auditPayment } from '@/services/finance';
 import PermissionBtn from '@/components/PermissionBtn';
@@ -13,9 +13,11 @@ const STATUS_MAP: Record<number, { text: string; color: string }> = {
 };
 
 export default function PayableList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
     { title: '供应商', dataIndex: 'supplierName', key: 'supplierName' },
@@ -49,10 +51,10 @@ export default function PayableList() {
       title: '操作', key: 'action', search: false,
       render: (_, record) => (
         <Space>
-          {(record.status === 0 || record.status === 1) && <PermissionBtn permission="finance:payment:audit" type="link" onClick={async () => { await auditPayment(record.id); message.success('付款成功'); actionRef.current?.reload(); }}>付款</PermissionBtn>}
+          {(record.status === 0 || record.status === 1) && <PermissionBtn permission="finance:payment:audit" type="link" onClick={async () => { await auditPayment(record.id); message.success('付款成功'); setTableKey(k => k + 1); }}>付款</PermissionBtn>}
           <PermissionBtn permission="finance:payable:edit" type="link" onClick={() => { setEditRecord(record); setModalOpen(true); }}>编辑</PermissionBtn>
           <PermissionBtn permission="finance:payable:delete" type="link" danger>
-            <Popconfirm title="确定删除?" onConfirm={async () => { await deletePayable(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
+            <Popconfirm title="确定删除?" onConfirm={async () => { await deletePayable(record.id); message.success('删除成功'); setTableKey(k => k + 1); }}>删除</Popconfirm>
           </PermissionBtn>
         </Space>
       ),
@@ -62,9 +64,16 @@ export default function PayableList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
         request={async (params) => {
-          const data = await getPayableList(params);
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getPayableList(query);
           return { data: data.records, total: data.total, success: true };
         }}
         actionRef={actionRef}
@@ -75,15 +84,22 @@ export default function PayableList() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑应付' : '新增应付'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (values) => {
-          editRecord ? await updatePayable(editRecord.id, values) : await addPayable(values);
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
+          try {
+            editRecord ? await updatePayable(editRecord.id, values) : await addPayable(values);
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
+          }
         }}
       >
         <ProFormDigit name="supplierId" label="供应商ID" rules={[{ required: true }]} />

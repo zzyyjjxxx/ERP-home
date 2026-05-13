@@ -7,7 +7,7 @@ import com.erp.sales.entity.SalReturnItem;
 import java.util.List;
 
 public interface SalReturnService extends IService<SalReturn> {
-    Page<SalReturn> pageReturns(int pageNum, int pageSize, Integer status);
+    Page<SalReturn> pageReturns(int pageNum, int pageSize, Integer status, String sortField, String sortOrder);
     void createReturn(SalReturn salReturn, List<SalReturnItem> items);
     void completeReturn(Long id);
     void unauditReturn(Long id);

@@ -3,6 +3,7 @@ package com.erp.finance.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.base.BaseController;
+import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.finance.entity.FinAccountSubject;
@@ -46,12 +47,20 @@ public class FinAccountSubjectController extends BaseController {
 
     @PostMapping
     public Result<?> add(@RequestBody FinAccountSubject subject) {
+        if (subjectMapper.selectCount(new LambdaQueryWrapper<FinAccountSubject>()
+                .eq(FinAccountSubject::getCode, subject.getCode())) > 0) {
+            throw new BusinessException("科目编码已存在");
+        }
         subjectMapper.insert(subject);
         return Result.ok();
     }
 
     @PutMapping("/{id}")
     public Result<?> update(@PathVariable Long id, @RequestBody FinAccountSubject subject) {
+        if (subjectMapper.selectCount(new LambdaQueryWrapper<FinAccountSubject>()
+                .eq(FinAccountSubject::getCode, subject.getCode()).ne(FinAccountSubject::getId, id)) > 0) {
+            throw new BusinessException("科目编码已存在");
+        }
         subject.setId(id);
         subjectMapper.updateById(subject);
         return Result.ok();

@@ -1,8 +1,10 @@
 package com.erp.inventory.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.inventory.entity.InvStock;
 import com.erp.inventory.entity.InvStockFlow;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +25,13 @@ public class InvStockServiceImpl extends ServiceImpl<InvStockMapper, InvStock> i
     private final InvStockFlowMapper stockFlowMapper;
 
     @Override
-    public Page<InvStock> pageStock(int pageNum, int pageSize, Long warehouseId, Long categoryId) {
+    public Page<InvStock> pageStock(int pageNum, int pageSize, Long warehouseId, Long categoryId, String sortField, String sortOrder) {
+        Map<String, SFunction<InvStock, ?>> fieldMap = Map.of(
+            "quantity", InvStock::getQuantity
+        );
         LambdaQueryWrapper<InvStock> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(warehouseId != null, InvStock::getWarehouseId, warehouseId)
-                .orderByDesc(InvStock::getQuantity);
+        wrapper.eq(warehouseId != null, InvStock::getWarehouseId, warehouseId);
+        SortHelper.applySort(wrapper, sortField, sortOrder, InvStock::getQuantity, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

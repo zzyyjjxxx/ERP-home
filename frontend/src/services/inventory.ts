@@ -49,7 +49,7 @@ export function getCategoryList(params?: any) {
   return request.get('/inventory/category/list', { params });
 }
 export function getCategoryTree() {
-  return request.get('/inventory/category/tree');
+  return request.get('/inventory/category/all');
 }
 export function addCategory(data: any) {
   return request.post('/inventory/category', data);

@@ -1,8 +1,10 @@
 package com.erp.production.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/production/planning")
@@ -26,11 +29,17 @@ public class PrdPlanningController extends BaseController {
     public Result<PageResult<PrdPlanning>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Integer status) {
-        Page<PrdPlanning> page = planningMapper.selectPage(new Page<>(pageNum, pageSize),
-                new LambdaQueryWrapper<PrdPlanning>()
-                        .eq(status != null, PrdPlanning::getStatus, status)
-                        .orderByDesc(PrdPlanning::getCreateTime));
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<PrdPlanning, ?>> fieldMap = Map.of(
+            "planNo", PrdPlanning::getPlanNo,
+            "createTime", PrdPlanning::getCreateTime
+        );
+        LambdaQueryWrapper<PrdPlanning> wrapper = new LambdaQueryWrapper<PrdPlanning>()
+                .eq(status != null, PrdPlanning::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, PrdPlanning::getCreateTime, fieldMap);
+        Page<PrdPlanning> page = planningMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 

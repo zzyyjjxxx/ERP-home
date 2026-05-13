@@ -6,6 +6,8 @@ import com.erp.system.entity.SysRole;
 import java.util.List;
 
 public interface SysRoleService extends IService<SysRole> {
+    void addRole(SysRole role);
+    void updateRole(SysRole role);
     List<Long> getRoleMenus(Long roleId);
     void assignMenus(Long roleId, List<Long> menuIds);
 }

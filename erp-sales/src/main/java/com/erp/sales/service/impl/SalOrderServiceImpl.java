@@ -1,8 +1,10 @@
 package com.erp.sales.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.sales.entity.SalDelivery;
 import com.erp.sales.entity.SalDeliveryItem;
@@ -20,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +33,15 @@ public class SalOrderServiceImpl extends ServiceImpl<SalOrderMapper, SalOrder> i
     private final SalDeliveryItemMapper deliveryItemMapper;
 
     @Override
-    public Page<SalOrder> pageOrders(int pageNum, int pageSize, Integer status, Long customerId) {
+    public Page<SalOrder> pageOrders(int pageNum, int pageSize, Integer status, Long customerId, String sortField, String sortOrder) {
+        Map<String, SFunction<SalOrder, ?>> fieldMap = Map.of(
+            "orderNo", SalOrder::getOrderNo,
+            "createTime", SalOrder::getCreateTime
+        );
         LambdaQueryWrapper<SalOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(status != null, SalOrder::getStatus, status)
-                .eq(customerId != null, SalOrder::getCustomerId, customerId)
-                .orderByDesc(SalOrder::getCreateTime);
+                .eq(customerId != null, SalOrder::getCustomerId, customerId);
+        SortHelper.applySort(wrapper, sortField, sortOrder, SalOrder::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 

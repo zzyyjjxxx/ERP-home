@@ -1,13 +1,18 @@
 package com.erp.finance.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
 import com.erp.finance.entity.FinPayable;
 import com.erp.finance.mapper.FinPayableMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/finance/payable")
@@ -20,11 +25,16 @@ public class FinPayableController extends BaseController {
     public Result<PageResult<FinPayable>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) Integer status) {
-        Page<FinPayable> page = payableMapper.selectPage(new Page<>(pageNum, pageSize),
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<FinPayable>()
-                        .eq(status != null, FinPayable::getStatus, status)
-                        .orderByDesc(FinPayable::getCreateTime));
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<FinPayable, ?>> fieldMap = Map.of(
+            "createTime", FinPayable::getCreateTime
+        );
+        LambdaQueryWrapper<FinPayable> wrapper = new LambdaQueryWrapper<FinPayable>()
+                .eq(status != null, FinPayable::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, FinPayable::getCreateTime, fieldMap);
+        Page<FinPayable> page = payableMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 

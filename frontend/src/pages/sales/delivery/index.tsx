@@ -1,16 +1,19 @@
 import { useRef, useState, useEffect } from 'react';
 import { ProTable, ModalForm, ProFormSelect, ProFormDatePicker, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Tag, message, Popconfirm } from 'antd';
+import { Tag, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getDeliveryList, addDelivery, updateDelivery, deleteDelivery, auditDelivery, unauditDelivery, getAllCustomers } from '@/services/sales';
 import { getWarehouseList } from '@/services/inventory';
 import PermissionBtn from '@/components/PermissionBtn';
 
 export default function DeliveryList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
+
   const [customerMap, setCustomerMap] = useState<Record<number, string>>({});
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export default function DeliveryList() {
   }, []);
 
   const columns: ProColumns[] = [
-    { title: '发货单号', dataIndex: 'deliveryNo', key: 'deliveryNo' },
+    { title: '发货单号', dataIndex: 'deliveryNo', key: 'deliveryNo', sorter: true },
     {
       title: '客户', dataIndex: 'customerId', key: 'customerId', search: false,
       render: (_, record) => customerMap[record.customerId] || record.customerName || record.customerId,
@@ -47,12 +50,12 @@ export default function DeliveryList() {
           {record.status === 0 && (
             <>
               <PermissionBtn permission="sales:delivery:edit" type="link" onClick={() => { setEditRecord(record); setModalOpen(true); }}>编辑</PermissionBtn>
-              <PermissionBtn permission="sales:delivery:audit" type="link" onClick={async () => { await auditDelivery(record.id); message.success('审核成功'); actionRef.current?.reload(); }}>审核</PermissionBtn>
+              <PermissionBtn permission="sales:delivery:audit" type="link" onClick={async () => { await auditDelivery(record.id); message.success('审核成功'); setTableKey(k => k + 1); }}>审核</PermissionBtn>
             </>
           )}
-          {record.status === 1 && <PermissionBtn permission="sales:delivery:unaudit" type="link" onClick={async () => { await unauditDelivery(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
+          {record.status === 1 && <PermissionBtn permission="sales:delivery:unaudit" type="link" onClick={async () => { await unauditDelivery(record.id); message.success('反审核成功'); setTableKey(k => k + 1); }}>反审核</PermissionBtn>}
           <PermissionBtn permission="sales:delivery:delete" type="link" danger>
-            <Popconfirm title="确定删除?" onConfirm={async () => { await deleteDelivery(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
+            <Popconfirm title="确定删除?" onConfirm={async () => { await deleteDelivery(record.id); message.success('删除成功'); setTableKey(k => k + 1); }}>删除</Popconfirm>
           </PermissionBtn>
         </>
       ),
@@ -61,25 +64,32 @@ export default function DeliveryList() {
 
   return (
     <>
-      <ProTable columns={columns} request={async (params) => { const data = await getDeliveryList(params); return { data: data.records, total: data.total, success: true }; }}
+      <ProTable key={tableKey} columns={columns} request={async (params) => { const { sorter, ...rest } = params; const query: any = { ...rest }; if (sorter?.field) { query.sortField = sorter.field; query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc'; } const data = await getDeliveryList(query); return { data: data.records, total: data.total, success: true }; }}
         actionRef={actionRef} rowKey="id" search={{ labelWidth: 'auto' }}
         toolBarRender={() => [
           <PermissionBtn key="add" permission="sales:delivery:add" type="primary" icon={<PlusOutlined />} onClick={() => { setEditRecord(null); setModalOpen(true); }}>新增发货单</PermissionBtn>,
         ]} />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑发货单' : '新增发货单'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (values) => {
-          if (editRecord) {
-            await updateDelivery(editRecord.id, values);
-          } else {
-            await addDelivery(values);
+          try {
+            if (editRecord) {
+              await updateDelivery(editRecord.id, values);
+            } else {
+              await addDelivery(values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormSelect

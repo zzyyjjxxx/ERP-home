@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ProTable, ProFormSelect, ProFormDatePicker } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, Modal, Form, Table, InputNumber, Input, message, Popconfirm, Space } from 'antd';
+import { Button, Tag, Modal, Form, Table, InputNumber, Input, App, Popconfirm, Space } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getOrderList, addOrder, updateOrder, auditOrder, unauditOrder, pushDownDelivery, cancelOrder, deleteOrder, getAllCustomers } from '@/services/sales';
 import { getAllProducts } from '@/services/inventory';
@@ -17,9 +17,12 @@ interface OrderItem {
 }
 
 export default function SalesOrderList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
+
   const [form] = Form.useForm();
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,7 @@ export default function SalesOrderList() {
   }, []);
 
   const columns: ProColumns[] = [
-    { title: '订单号', dataIndex: 'orderNo', key: 'orderNo' },
+    { title: '订单号', dataIndex: 'orderNo', key: 'orderNo', sorter: true },
     {
       title: '客户', dataIndex: 'customerId', key: 'customerId', search: false,
       render: (_, record) => customerMap[record.customerId] || record.customerName || record.customerId,
@@ -55,9 +58,9 @@ export default function SalesOrderList() {
       title: '操作', key: 'action', search: false,
       render: (_, record) => (
         <Space>
-          {record.status === 1 && <PermissionBtn permission="sales:order:audit" type="link" onClick={async () => { await auditOrder(record.id); message.success('审核成功'); actionRef.current?.reload(); }}>审核</PermissionBtn>}
-          {record.status === 2 && <PermissionBtn permission="sales:order:unaudit" type="link" onClick={async () => { await unauditOrder(record.id); message.success('反审核成功'); actionRef.current?.reload(); }}>反审核</PermissionBtn>}
-          {record.status === 2 && <PermissionBtn permission="sales:order:push-delivery" type="link" onClick={async () => { await pushDownDelivery(record.id); message.success('下推成功'); actionRef.current?.reload(); }}>下推发货</PermissionBtn>}
+          {record.status === 1 && <PermissionBtn permission="sales:order:audit" type="link" onClick={async () => { await auditOrder(record.id); message.success('审核成功'); setTableKey(k => k + 1); }}>审核</PermissionBtn>}
+          {record.status === 2 && <PermissionBtn permission="sales:order:unaudit" type="link" onClick={async () => { await unauditOrder(record.id); message.success('反审核成功'); setTableKey(k => k + 1); }}>反审核</PermissionBtn>}
+          {record.status === 2 && <PermissionBtn permission="sales:order:push-delivery" type="link" onClick={async () => { await pushDownDelivery(record.id); message.success('下推成功'); setTableKey(k => k + 1); }}>下推发货</PermissionBtn>}
           {(record.status === 0 || record.status === 1) && (
             <>
               <PermissionBtn permission="sales:order:edit" type="link" onClick={() => {
@@ -74,12 +77,12 @@ export default function SalesOrderList() {
                 setModalOpen(true);
               }}>编辑</PermissionBtn>
               <PermissionBtn permission="sales:order:cancel" type="link" danger>
-                <Popconfirm title="确定取消?" onConfirm={async () => { await cancelOrder(record.id); message.success('已取消'); actionRef.current?.reload(); }}>取消</Popconfirm>
+                <Popconfirm title="确定取消?" onConfirm={async () => { await cancelOrder(record.id); message.success('已取消'); setTableKey(k => k + 1); }}>取消</Popconfirm>
               </PermissionBtn>
             </>
           )}
           <PermissionBtn permission="sales:order:delete" type="link" danger>
-            <Popconfirm title="确定删除?" onConfirm={async () => { await deleteOrder(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
+            <Popconfirm title="确定删除?" onConfirm={async () => { await deleteOrder(record.id); message.success('删除成功'); setTableKey(k => k + 1); }}>删除</Popconfirm>
           </PermissionBtn>
         </Space>
       ),
@@ -125,7 +128,7 @@ export default function SalesOrderList() {
         message.success('新增成功');
       }
       setModalOpen(false);
-      actionRef.current?.reload();
+      setTableKey(k => k + 1);
     } catch (e: any) {
       if (e?.errorFields) return;
       message.error('操作失败');
@@ -164,7 +167,7 @@ export default function SalesOrderList() {
 
   return (
     <>
-      <ProTable columns={columns} request={async (params) => { const data = await getOrderList(params); return { data: data.records, total: data.total, success: true }; }}
+      <ProTable key={tableKey} columns={columns} request={async (params) => { const { sorter, ...rest } = params; const query: any = { ...rest }; if (sorter?.field) { query.sortField = sorter.field; query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc'; } const data = await getOrderList(query); return { data: data.records, total: data.total, success: true }; }}
         actionRef={actionRef} rowKey="id" search={{ labelWidth: 'auto' }}
         toolBarRender={() => [
           <PermissionBtn key="add" permission="sales:order:add" type="primary" icon={<PlusOutlined />} onClick={() => { setEditRecord(null); form.resetFields(); setItems([]); setModalOpen(true); }}>新增订单</PermissionBtn>,

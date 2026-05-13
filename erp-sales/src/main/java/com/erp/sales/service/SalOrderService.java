@@ -8,7 +8,7 @@ import com.erp.sales.entity.SalOrderItem;
 import java.util.List;
 
 public interface SalOrderService extends IService<SalOrder> {
-    Page<SalOrder> pageOrders(int pageNum, int pageSize, Integer status, Long customerId);
+    Page<SalOrder> pageOrders(int pageNum, int pageSize, Integer status, Long customerId, String sortField, String sortOrder);
     void createOrder(SalOrder order, List<SalOrderItem> items);
     void auditOrder(Long id);
     void unauditOrder(Long id);

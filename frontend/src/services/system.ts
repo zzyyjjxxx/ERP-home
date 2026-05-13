@@ -8,15 +8,15 @@ export function addUser(data: Record<string, unknown>): Promise<unknown> {
   return request.post('/system/user', data);
 }
 
-export function updateUser(id: number, data: Record<string, unknown>): Promise<unknown> {
+export function updateUser(id: string | number, data: Record<string, unknown>): Promise<unknown> {
   return request.put(`/system/user/${id}`, data);
 }
 
-export function deleteUser(id: number): Promise<unknown> {
+export function deleteUser(id: string | number): Promise<unknown> {
   return request.delete(`/system/user/${id}`);
 }
 
-export function assignUserRoles(id: number, roleIds: number[]): Promise<unknown> {
+export function assignUserRoles(id: string | number, roleIds: number[]): Promise<unknown> {
   return request.put(`/system/user/${id}/roles`, roleIds);
 }
 
@@ -28,19 +28,19 @@ export function addRole(data: Record<string, unknown>): Promise<unknown> {
   return request.post('/system/role', data);
 }
 
-export function updateRole(id: number, data: Record<string, unknown>): Promise<unknown> {
+export function updateRole(id: string | number, data: Record<string, unknown>): Promise<unknown> {
   return request.put(`/system/role/${id}`, data);
 }
 
-export function deleteRole(id: number): Promise<unknown> {
+export function deleteRole(id: string | number): Promise<unknown> {
   return request.delete(`/system/role/${id}`);
 }
 
-export function getRoleMenus(id: number): Promise<number[]> {
+export function getRoleMenus(id: string | number): Promise<number[]> {
   return request.get(`/system/role/${id}/menus`);
 }
 
-export function assignRoleMenus(id: number, menuIds: number[]): Promise<unknown> {
+export function assignRoleMenus(id: string | number, menuIds: number[]): Promise<unknown> {
   return request.put(`/system/role/${id}/menus`, menuIds);
 }
 
@@ -52,10 +52,10 @@ export function addMenu(data: Record<string, unknown>): Promise<unknown> {
   return request.post('/system/menu', data);
 }
 
-export function updateMenu(id: number, data: Record<string, unknown>): Promise<unknown> {
+export function updateMenu(id: string | number, data: Record<string, unknown>): Promise<unknown> {
   return request.put(`/system/menu/${id}`, data);
 }
 
-export function deleteMenu(id: number): Promise<unknown> {
+export function deleteMenu(id: string | number): Promise<unknown> {
   return request.delete(`/system/menu/${id}`);
 }

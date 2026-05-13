@@ -2,8 +2,10 @@ package com.erp.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.system.entity.SysUser;
 import com.erp.system.entity.SysUserRole;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
@@ -26,15 +29,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public Page<SysUser> pageUsers(int pageNum, int pageSize, String keyword, Long deptId, Integer status) {
+    public Page<SysUser> pageUsers(int pageNum, int pageSize, String keyword, Long deptId, Integer status, String sortField, String sortOrder) {
+        Map<String, SFunction<SysUser, ?>> fieldMap = Map.of(
+            "username", SysUser::getUsername,
+            "realName", SysUser::getRealName,
+            "createTime", SysUser::getCreateTime
+        );
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.and(StrUtil.isNotBlank(keyword), w -> w
                 .like(SysUser::getUsername, keyword)
                 .or()
                 .like(SysUser::getRealName, keyword))
                 .eq(deptId != null, SysUser::getDeptId, deptId)
-                .eq(status != null, SysUser::getStatus, status)
-                .orderByDesc(SysUser::getCreateTime);
+                .eq(status != null, SysUser::getStatus, status);
+        SortHelper.applySort(wrapper, sortField, sortOrder, SysUser::getCreateTime, fieldMap);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 
@@ -57,6 +65,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public void updateUser(SysUser user) {
+        if (lambdaQuery().eq(SysUser::getUsername, user.getUsername()).ne(SysUser::getId, user.getId()).count() > 0) {
+            throw new BusinessException("用户名已存在");
+        }
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             user.setPassword(encoder.encode(user.getPassword()));

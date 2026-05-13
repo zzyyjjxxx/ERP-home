@@ -1,19 +1,21 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, message, Popconfirm } from 'antd';
+import { Button, Tag, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getSupplierList, addSupplier, updateSupplier, deleteSupplier } from '@/services/purchase';
 import PermissionBtn from '@/components/PermissionBtn';
 
 export default function SupplierList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns: ProColumns[] = [
-    { title: '编码', dataIndex: 'code', key: 'code' },
-    { title: '名称', dataIndex: 'name', key: 'name' },
+    { title: '编码', dataIndex: 'code', key: 'code', sorter: true },
+    { title: '名称', dataIndex: 'name', key: 'name', sorter: true },
     { title: '联系人', dataIndex: 'contactPerson', key: 'contactPerson', search: false },
     { title: '电话', dataIndex: 'phone', key: 'phone', search: false },
     { title: '邮箱', dataIndex: 'email', key: 'email', search: false },
@@ -32,7 +34,7 @@ export default function SupplierList() {
         <>
           <PermissionBtn permission="purchase:supplier:edit" type="link" onClick={() => { setEditRecord(record); setModalOpen(true); }}>编辑</PermissionBtn>
           <PermissionBtn permission="purchase:supplier:delete" type="link" danger>
-            <Popconfirm title="确定删除?" onConfirm={async () => { await deleteSupplier(record.id); message.success('删除成功'); actionRef.current?.reload(); }}>删除</Popconfirm>
+            <Popconfirm title="确定删除?" onConfirm={async () => { await deleteSupplier(record.id); message.success('删除成功'); setTableKey(k => k + 1); }}>删除</Popconfirm>
           </PermissionBtn>
         </>
       ),
@@ -41,13 +43,13 @@ export default function SupplierList() {
 
   return (
     <>
-      <ProTable columns={columns} request={async (params) => { const data = await getSupplierList(params); return { data: data.records, total: data.total, success: true }; }}
+      <ProTable key={tableKey} columns={columns} request={async (params) => { const { sorter, ...rest } = params; const query: any = { ...rest }; if (sorter?.field) { query.sortField = sorter.field; query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc'; } const data = await getSupplierList(query); return { data: data.records, total: data.total, success: true }; }}
         actionRef={actionRef} rowKey="id" search={{ labelWidth: 'auto' }}
         toolBarRender={() => [
           <PermissionBtn key="add" permission="purchase:supplier:add" type="primary" icon={<PlusOutlined />} onClick={() => { setEditRecord(null); setModalOpen(true); }}>新增供应商</PermissionBtn>,
         ]} />
-      <ModalForm title={editRecord ? '编辑供应商' : '新增供应商'} open={modalOpen} onOpenChange={setModalOpen} initialValues={editRecord}
-        onFinish={async (values) => { editRecord ? await updateSupplier(editRecord.id, values) : await addSupplier(values); message.success(editRecord ? '修改成功' : '新增成功'); actionRef.current?.reload(); return true; }}>
+      <ModalForm key={editRecord?.id || 'add'} title={editRecord ? '编辑供应商' : '新增供应商'} open={modalOpen} onOpenChange={setModalOpen} initialValues={editRecord} modalProps={{ destroyOnClose: true }}
+        onFinish={async (values) => { try { editRecord ? await updateSupplier(editRecord.id, values) : await addSupplier(values); message.success(editRecord ? '修改成功' : '新增成功'); setTableKey(k => k + 1); return true; } catch (err: any) { message.error(err?.message || '操作失败'); return false; } }}>
         <ProFormText name="code" label="编码" rules={[{ required: true }]} />
         <ProFormText name="name" label="名称" rules={[{ required: true }]} />
         <ProFormText name="contactPerson" label="联系人" />

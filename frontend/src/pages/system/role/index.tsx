@@ -1,15 +1,18 @@
 import { useRef, useState } from 'react';
 import { ProTable, ModalForm, ProFormText, ProFormDigit } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Tree, Modal, message, Popconfirm } from 'antd';
+import { Tree, Modal, App, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getRoleList, addRole, updateRole, deleteRole, getRoleMenus, assignRoleMenus, getMenuTree } from '@/services/system';
 import PermissionBtn from '@/components/PermissionBtn';
 
 export default function RoleList() {
+  const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null!);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<any>(null);
+  const [tableKey, setTableKey] = useState(0);
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [currentRoleId, setCurrentRoleId] = useState<number>();
   const [checkedKeys, setCheckedKeys] = useState<number[]>([]);
@@ -24,8 +27,8 @@ export default function RoleList() {
   };
 
   const columns: ProColumns[] = [
-    { title: '角色编码', dataIndex: 'roleCode', key: 'roleCode' },
-    { title: '角色名称', dataIndex: 'roleName', key: 'roleName' },
+    { title: '角色编码', dataIndex: 'roleCode', key: 'roleCode', sorter: true },
+    { title: '角色名称', dataIndex: 'roleName', key: 'roleName', sorter: true },
     { title: '排序', dataIndex: 'roleSort', key: 'roleSort', search: false },
     {
       title: '操作', key: 'action', search: false,
@@ -40,7 +43,7 @@ export default function RoleList() {
             <Popconfirm title="确定删除?" onConfirm={async () => {
               await deleteRole(record.id);
               message.success('删除成功');
-              actionRef.current?.reload();
+              setTableKey(k => k + 1);
             }}>删除</Popconfirm>
           </PermissionBtn>
         </>
@@ -51,9 +54,16 @@ export default function RoleList() {
   return (
     <>
       <ProTable
+        key={tableKey}
         columns={columns}
-        request={async () => {
-          const data = await getRoleList();
+        request={async (params) => {
+          const { sorter, ...rest } = params;
+          const query: any = { ...rest };
+          if (sorter?.field) {
+            query.sortField = sorter.field;
+            query.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc';
+          }
+          const data = await getRoleList(query);
           return { data, total: data?.length || 0, success: true };
         }}
         actionRef={actionRef}
@@ -67,19 +77,26 @@ export default function RoleList() {
         ]}
       />
       <ModalForm
+        key={editRecord?.id || 'add'}
         title={editRecord ? '编辑角色' : '新增角色'}
         open={modalOpen}
         onOpenChange={setModalOpen}
         initialValues={editRecord}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (values) => {
-          if (editRecord) {
-            await updateRole(editRecord.id, values);
-          } else {
-            await addRole(values);
+          try {
+            if (editRecord) {
+              await updateRole(editRecord.id, values);
+            } else {
+              await addRole(values);
+            }
+            message.success(editRecord ? '修改成功' : '新增成功');
+            setTableKey(k => k + 1);
+            return true;
+          } catch (err: any) {
+            message.error(err?.message || '操作失败');
+            return false;
           }
-          message.success(editRecord ? '修改成功' : '新增成功');
-          actionRef.current?.reload();
-          return true;
         }}
       >
         <ProFormText name="roleCode" label="角色编码" rules={[{ required: true }]} />

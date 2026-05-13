@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export interface UserInfo {
-  id: number;
+  id: string;
   username: string;
   realName: string;
   avatar?: string;

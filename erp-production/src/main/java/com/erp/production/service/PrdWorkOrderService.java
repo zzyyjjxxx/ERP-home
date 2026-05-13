@@ -13,7 +13,7 @@ public interface PrdWorkOrderService extends IService<PrdWorkOrder> {
     /**
      * Page query work orders
      */
-    Page<PrdWorkOrder> pageOrders(int pageNum, int pageSize, Integer status);
+    Page<PrdWorkOrder> pageOrders(int pageNum, int pageSize, Integer status, String sortField, String sortOrder);
 
     /**
      * Create work order with items. If bomId is set and items are empty, auto-generate from BOM.

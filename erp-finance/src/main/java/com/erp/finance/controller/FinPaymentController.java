@@ -1,9 +1,11 @@
 package com.erp.finance.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.erp.common.annotation.RequirePermission;
 import com.erp.common.base.BaseController;
+import com.erp.common.base.SortHelper;
 import com.erp.common.exception.BusinessException;
 import com.erp.common.response.PageResult;
 import com.erp.common.response.Result;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/finance/payment")
@@ -28,12 +31,18 @@ public class FinPaymentController extends BaseController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) String paymentType) {
-        Page<FinPayment> page = paymentMapper.selectPage(new Page<>(pageNum, pageSize),
-                new LambdaQueryWrapper<FinPayment>()
-                        .eq(status != null, FinPayment::getStatus, status)
-                        .eq(paymentType != null && !paymentType.isEmpty(), FinPayment::getPaymentType, paymentType)
-                        .orderByDesc(FinPayment::getCreateTime));
+            @RequestParam(required = false) String paymentType,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        Map<String, SFunction<FinPayment, ?>> fieldMap = Map.of(
+            "paymentNo", FinPayment::getPaymentNo,
+            "createTime", FinPayment::getCreateTime
+        );
+        LambdaQueryWrapper<FinPayment> wrapper = new LambdaQueryWrapper<FinPayment>()
+                .eq(status != null, FinPayment::getStatus, status)
+                .eq(paymentType != null && !paymentType.isEmpty(), FinPayment::getPaymentType, paymentType);
+        SortHelper.applySort(wrapper, sortField, sortOrder, FinPayment::getCreateTime, fieldMap);
+        Page<FinPayment> page = paymentMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return pageResult(page);
     }
 
